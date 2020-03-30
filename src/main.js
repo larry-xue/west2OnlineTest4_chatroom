@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import '@babel/polyfill';
 import 'font-awesome/css/font-awesome.css';
 import axios from 'axios';
 import router from './router';

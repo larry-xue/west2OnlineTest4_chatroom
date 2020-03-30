@@ -5,31 +5,32 @@
         <h2>Profile</h2>
       </div>
       <div class="search">
-        <input type="text" placeholder="Search for Messages or users...">
-        <i class="fa fa-search"></i>
+        <searchCmp></searchCmp>
       </div>
     </header>
     <div class="infoShow">
       <div class="mainInfo">
         <div class="blank"></div>
         <div class="userpic">
-          <img src="https://pic3.zhimg.com/v2-c073bf0fa922e7c131d070a79cb933dd_is.jpg">
+          <img :src="userInfo.picUrl">
         </div>
-        <h3 class="username">azoux</h3>
+        <h3 class="username">{{ userInfo.name }}</h3>
         <div class="sayings">
-          <p>究竟爱一个人，可以到什么程度？究竟什么样的邂逅，可以舍命不悔？逻辑的尽头不是理性和秩序的理想国，而是我用生命奉献的爱情！</p>
+          <p>{{ userInfo.autograph }}</p>
         </div>
         <div class="blank" style="height: 4.5vh;"></div>
       </div>
-      <div class="otherInfo">
-        <ul>
-          <profile-item
-            v-for="(item, index) in profileItems"
-            :key='index'
-            :item='item'
-          >
-          </profile-item>
-        </ul>
+      <div class="otherInfoOuter">
+        <div class="otherInfo">
+          <ul>
+            <profile-item
+              v-for="(item, index) in profileItems"
+              :key='index'
+              :item='item'
+            >
+            </profile-item>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -37,49 +38,55 @@
 
 <script>
 import profileItem from './userProfileItem.vue';
+import searchCmp from '../searchCpm.vue';
 
 export default {
   components: {
     profileItem,
+    searchCmp,
   },
   data() {
     return {
       profileItems: [
         {
-          itemName: 'country',
+          itemName: 'Country',
           itemContent: 'China',
           itemIcon: 'fa fa-globe fa-fw',
           showLine: 1,
         },
         {
-          itemName: 'phone',
+          itemName: 'Phone',
           itemContent: '+110 110 110',
           itemIcon: 'fa fa-microphone fa-fw',
           showLine: 1,
         },
         {
-          itemName: 'email',
+          itemName: 'Email',
           itemContent: 'you@you.com',
           itemIcon: 'fa fa-envelope-o fa-fw',
           showLine: 1,
         },
         {
-          itemName: 'time',
+          itemName: 'Time',
           itemContent: '2020/03/27',
           itemIcon: 'fa fa-clock-o fa-fw',
           showLine: 0,
         },
       ],
+      userInfo: {
+        name: 'Azoux',
+        autograph: '究竟爱一个人，可以到什么程度？究竟什么样的邂逅，可以舍命不悔？逻辑的尽头不是理性和秩序的理想国，而是我用生命奉献的爱情！',
+        picUrl: '',
+        phone: '+110 110 110',
+        email: 'you@you.com',
+        id: '',
+      },
     };
   },
 };
 </script>
 
 <style scoped>
-  input {
-    outline: none;
-    border: none;
-  }
 
   .blank {
     width: 2px;
@@ -88,7 +95,6 @@ export default {
 
   header {
     width: 90%;
-    /* background-color: skyblue; */
     margin: 0 auto;
   }
 
@@ -101,26 +107,9 @@ export default {
     font-size: 1.8em;
   }
 
-  header .search {
-    width: 100%;
-    height: 50px;
-    margin-top: 10px;
-    border-radius: 10px;
-    background-color: rgb(237,238,246);
-  }
-
-  .search input {
-    width: 90%;
-    height: 100%;
-    background-color:rgb(237,238,246);
-  }
-
-  .search i {
-    cursor: pointer;
-  }
-
   .infoShow {
     width: 90%;
+    height: 80vh;
     margin: 0 auto;
     overflow: hidden;
   }
@@ -153,11 +142,35 @@ export default {
     margin: 0 auto;
     margin-top: 12px;
     color: rgb(178,183,189);
+    word-break:break-all;
   }
 
+   .infoShow .otherInfoOuter {
+     height: 75%;
+   }
+
    .infoShow .otherInfo {
-    margin-top: 28px;
-    border-radius: 10px;
-    background-color:#fff;
+      height: 73%;
+      margin-top: 28px;
+      border-radius: 10px;
+      background-color:#fff;
+      overflow-x: hidden;
+      overflow-y: scroll;
+  }
+
+    ::-webkit-scrollbar {
+    width:12px;
+    background-color: white;
+  }
+
+  /* 滚动槽 */
+  ::-webkit-scrollbar-track {
+    border-radius:10px;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    border-radius:10px;
+    background:rgb(237,238,248);
   }
 </style>

@@ -24,14 +24,14 @@ export default {
   .splitLine {
     width: 98%;
     height: 1px;
-    background-color: #e9e9e9;
+    background-color: #efefef;
     margin-left: 1%;
-    margin-top: 20px;
+    margin-top: 3vh;
   }
 
   .info {
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 4.6vh;
+    padding-bottom: 2vh;
   }
 
   .info .detailItem {
@@ -54,7 +54,7 @@ export default {
   }
 
   .info .contentItem {
-    margin-top: 6px;
-    color: #838383;
+    margin-top: 0.8vh;
+    color: rgb(155,175,183);
   }
 </style>

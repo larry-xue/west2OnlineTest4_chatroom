@@ -30,8 +30,8 @@ export default {
     },
   },
   methods: {
-    onEnterKey(e) {
-      console.log('ClickedEnter', e);
+    onEnterKey() {
+
     },
   },
 };

@@ -18,7 +18,6 @@ export default {
     profile,
     settings,
   },
-
 };
 </script>
 
@@ -26,7 +25,6 @@ export default {
   .userInfo {
     width: 100%;
     height: 100%;
-    background-color:  #ccc;
   }
 
   .userInfo .user-profile {

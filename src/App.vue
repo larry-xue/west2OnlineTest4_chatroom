@@ -49,6 +49,10 @@ export default {
   margin: 0;
 }
 
+i:hover {
+  color: rgb(1,118,255);
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -143,7 +147,5 @@ a {
   width: 90%;
   height: 100vh;
   /* margin-left: 0.2vw; */
-  background-color: #ccc;
-
 }
 </style>
