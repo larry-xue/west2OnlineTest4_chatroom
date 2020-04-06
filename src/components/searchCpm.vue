@@ -24,7 +24,9 @@
   .searchCmp input {
     width: 90%;
     height: 100%;
-    padding-left: 2%;
+    float: left;
+    border-radius: 10px;
+    padding-left: 1vw;
     font-size: 1.0em;
     background-color:rgb(237,238,246);
   }

@@ -24,14 +24,24 @@
     <div class="content">
       <router-view to="datanow"></router-view>
     </div>
+    <alertCpm :alertInfo="alertData" v-show="showAlert"></alertCpm>
   </div>
 </template>
 
 <script>
+import alertCpm from './components/alertCpm.vue';
+
 export default {
+  components: {
+    alertCpm,
+  },
   data() {
     return {
       datanow: '/chat',
+      alertData: {
+        content: 'Alert Test',
+      },
+      showAlert: false,
     };
   },
   methods: {
@@ -39,6 +49,22 @@ export default {
       // this.datanow = 2;
     },
   },
+  // sockets: {
+  //   // 这里是监听connect事件
+  //   connect() {
+  //     // 获取每台客服端生成的id
+  //     this.websocketid = this.$socket.id;
+  //     console.log('链接服务器');
+  //   },
+  //   // 监听断开连接，函数
+  //   disconnect() {
+  //     console.log('断开服务器连接');
+  //   },
+  //   // 服务端指定有msg监听的客服端，可接对应发来的收消息，data服务端传的消息
+  //   msg(data) {
+  //     console.log(data);
+  //   },
+  // },
 };
 </script>
 
@@ -59,7 +85,7 @@ i:hover {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  width: 99vw;
+  width: 100vw;
   height: 100vh;
 }
 
@@ -136,7 +162,7 @@ a {
 
 .splitLine {
   float: left;
-  height: 97vh;
+  height: 100vh;
   width: 0.27%;
   background-color: rgb(245,246,250);
   /* margin-top: 3vh; */
@@ -144,7 +170,7 @@ a {
 
 .content {
   float: left;
-  width: 90%;
+  width: 91.5%;
   height: 100vh;
   /* margin-left: 0.2vw; */
 }

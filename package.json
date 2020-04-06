@@ -9,12 +9,13 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.8.7",
-    "@kevinfaguiar/vue-twemoji-picker": "^5.5.3",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
+    "emoji-mart-vue": "^2.6.6",
     "font-awesome": "^4.7.0",
     "vue": "^2.6.11",
-    "vue-router": "^3.1.5"
+    "vue-router": "^3.1.5",
+    "vue-socket.io": "^3.0.7"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.2.0",
