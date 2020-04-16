@@ -8,7 +8,7 @@
       <chatBody></chatBody>
     </div>
   </div>
-  <div class="chatSide" v-show="showOp">
+  <div class="chatSide" v-show="showSide">
     <chatSide></chatSide>
   </div>
 </div>
@@ -18,12 +18,13 @@
 import chatNav from '../components/chat/chatNav.vue';
 import chatBody from '../components/chat/chatBody.vue';
 import chatSide from '../components/chat/chatSide.vue';
+import bus from '../bus';
 
 export default {
   name: 'Chat',
   data() {
     return {
-      showOp: false,
+      showSide: false,
     };
   },
   components: {
@@ -35,11 +36,18 @@ export default {
 
   },
   created() {
-    console.log('chat created');
+    bus.$on('side_show', () => {
+      this.showSide = true;
+    });
+    bus.$on('side_close', () => {
+      this.showSide = false;
+    });
   },
-  destroyed() {
-    console.log('chat destroyed');
+  beforeDestroy() {
+    bus.$off('side_show');
+    bus.$off('side_close');
   },
+
 };
 </script>
 
@@ -52,8 +60,9 @@ export default {
   }
 
   .chatPage .main {
-    width: 70%;
-    flex-grow: 2;
+    width: 100%;
+    /* flex-grow: 2; */
+    flex-shrink: 100;
     height: 100%;
   }
   .main .nav {
@@ -67,9 +76,8 @@ export default {
   }
 
   .chatPage .chatSide {
-    width: 20%;
+    width: 22%;
     height: 100%;
-    background-color: salmon;
   }
 
 </style>

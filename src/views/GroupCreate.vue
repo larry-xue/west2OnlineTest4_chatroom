@@ -15,7 +15,7 @@
         :settingItem="item"
       ></normalSettingItem>
       <div class="submitBtn">
-        <button>Create group</button>
+        <button @click="creatGroup">Create group</button>
       </div>
     </div>
   </div>
@@ -25,6 +25,7 @@
 import searchCmp from '../components/searchCpm.vue';
 import normalSettingItem from '../components/normalSettingItem.vue';
 import updatePhoto from '../components/uploadAndShowImg.vue';
+// import bus from '../bus';
 
 export default {
   components: {
@@ -37,21 +38,71 @@ export default {
       createItem: [
         {
           title: 'Name',
+          queryName: 'name',
           placeholder: 'Group Name',
           maxlength: 25,
         },
         {
           title: 'Topic (optional)',
+          queryName: 'topic',
           placeholder: 'Group Topic',
           maxlength: 25,
         },
         {
           title: 'Description',
+          queryName: 'describe',
           placeholder: 'Group Description',
           maxlength: 50,
         },
       ],
     };
+  },
+  methods: {
+    creatGroup() {
+      const param = new FormData();
+      const child = this.$children;
+      const sendInfo = {};
+      for (let i = 2; i < child.length; i += 1) {
+        if (child[i].userInput !== '') {
+          sendInfo[child[i].$props.settingItem.queryName] = child[i].userInput;
+        }
+      }
+      Object.keys(sendInfo).forEach((key) => {
+        param.append(key, sendInfo[key]);
+      });
+
+      const file = this.$children[1].$el.childNodes[2].files[0];
+
+      // 通过append向form对象添加数据
+      //    判断是否上传了图片
+      if (sendInfo.name !== undefined && sendInfo.name !== '') {
+        // 发送修改头像请求
+        // 通过append向form对象添加数据
+        if (file !== undefined) {
+          param.append('folder', 'icon');
+          param.append('file', file, file.name);
+          this.$http.post('/api/files', param).then((response) => {
+            console.log(response);
+            // 头像上传完之后拿到url 再发送创建群组请求
+            this.$socket.emit('create_room', sendInfo);
+            // const url = `http://39.97.113.252:5000${response.data.data.url}`;
+          });
+        } else {
+          console.log('in');
+          this.$socket.emit('create_room', sendInfo);
+          this.$socket.emit('relogin', (res) => {
+            console.log(res);
+          });
+        }
+      } else {
+        console.log('alert! 请至少保证输入名字！');
+      }
+    },
+  },
+  mounted() {
+    this.$socket.on('create_room', (res) => {
+      console.log(res);
+    });
   },
 };
 </script>
@@ -75,6 +126,7 @@ export default {
 
   .userpic p {
     text-align: left;
+    font-weight: bold;
     color: #888;
   }
 

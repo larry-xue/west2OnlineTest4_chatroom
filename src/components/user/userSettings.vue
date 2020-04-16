@@ -32,6 +32,7 @@
 <script>
 import userPicCmp from '../uploadAndShowImg.vue';
 import normalSettingItem from '../normalSettingItem.vue';
+import bus from '../../bus';
 
 export default {
   components: {
@@ -47,7 +48,7 @@ export default {
           maxlength: 10,
         },
         {
-          title: 'Autograph',
+          title: 'Autograpgh',
           placeholder: 'write something about you..',
           maxlength: 50,
         },
@@ -65,6 +66,19 @@ export default {
     };
   },
   methods: {
+    uploadImg(param, file) {
+      // 通过append向form对象添加数据
+      param.append('folder', 'icon');
+      param.append('file', file, file.name);
+      this.$http.post('/api/files', param).then((response) => {
+        const url = `http://39.97.113.252:5000${response.data.data.url}`;
+        // 本地存储url
+        localStorage.setItem('picUrl', url);
+        console.log(111);
+        bus.$emit('update_userPic');
+      }).catch(() => {
+      });
+    },
     update() {
       // 获取用户输入的数据 (1---length-1)
       const child = this.$children;
@@ -82,55 +96,47 @@ export default {
       // 通过append向form对象添加数据
       //    判断是否上传了图片
       if (file !== undefined) {
-        param.append('userPic', file, file.name);
+        // 发送修改头像请求
+        this.uploadImg(param, file);
       }
+
       //    其他数据
+      console.log(sendInfo);
+      let testaramEmpyt = '';
       Object.keys(sendInfo).forEach((key) => {
         param.append(key, sendInfo[key]);
+        testaramEmpyt = key;
       });
-      //    添加id  如果没有那么为 ‘ ’ 空
-      try {
-        param.append('id', JSON.parse(localStorage.getItem('id')).id);
-      } catch (err) {
-        localStorage.setItem('id', '');
-      }
-      // 添加请求头
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      };
-      this.$http.put('https://www.fastmock.site/mock/82a4399ddb3499bef629e9d01f337f7d/wechat/chat', param, config).then((response) => {
-        // 更新localstorage中的id & 直接用sendInfo修改profile中的数据 & 修改头像url
-        //   localstorage
-        localStorage.setItem('id', response.data.data.uid);
-        //   profile
-        Object.keys(sendInfo).forEach((key) => {
-          // profileItems  itemContent  其他信息需要另外修改
-          if (key === 'phone' || key === 'email') {
-            if (key === 'phone') {
-              this.$parent.$children[0].profileItems[1].itemContent = sendInfo[key];
-            } else if (key === 'email') {
-              this.$parent.$children[0].profileItems[2].itemContent = sendInfo[key];
+      // 判断是否只修改图片
+      if (testaramEmpyt !== '') {
+        this.$http.put('/user', param).then((response) => {
+          // 更新localstorage中的id & 直接用sendInfo修改profile中的数据 & 修改头像url
+          //   localstorage
+          console.log(response);
+          const data = JSON.stringify(response.data.data);
+          localStorage.setItem('userInfo', data);
+          //   profile
+          Object.keys(sendInfo).forEach((key) => {
+            // profileItems  itemContent  其他信息需要另外修改
+            if (key === 'phone' || key === 'email') {
+              if (key === 'phone') {
+                this.$parent.$children[0].profileItems[1].itemContent = sendInfo[key];
+              } else if (key === 'email') {
+                this.$parent.$children[0].profileItems[2].itemContent = sendInfo[key];
+              }
+            } else {
+              // 修改面板
+              // console.log(key);
+              this.$parent.$children[0].userInfo[key] = sendInfo[key];
             }
-          } else {
-            // 修改面板
-            // console.log(key);
-            this.$parent.$children[0].userInfo[key] = sendInfo[key];
-          }
+          });
+        }).catch((err) => {
+          console.log(err);
         });
-        // pic url
-        console.log(response.data.data);
-        this.$parent.$children[0].userInfo.picUrl = response.data.data.picurl;
-        // console.log(this.$parent.$children[0].userInfo.picUrl);
-      });
+      }
     },
   },
-  mounted() {
-    // 当实例加载完之后调用
-    // 初始化用户/识别用户
-    this.update();
-  },
+
 };
 
 </script>

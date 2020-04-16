@@ -16,7 +16,7 @@
         </div>
         <h3 class="username">{{ userInfo.name }}</h3>
         <div class="sayings">
-          <p>{{ userInfo.autograph }}</p>
+          <p>{{ userInfo.autograpgh }}</p>
         </div>
         <div class="blank" style="height: 4.5vh;"></div>
       </div>
@@ -37,6 +37,8 @@
 </template>
 
 <script>
+import bus from '../../bus';
+
 import profileItem from './userProfileItem.vue';
 import searchCmp from '../searchCpm.vue';
 
@@ -75,13 +77,43 @@ export default {
       ],
       userInfo: {
         name: 'Azoux',
-        autograph: '究竟爱一个人，可以到什么程度？究竟什么样的邂逅，可以舍命不悔？逻辑的尽头不是理性和秩序的理想国，而是我用生命奉献的爱情！',
+        autograpgh: '究竟爱一个人，可以到什么程度？究竟什么样的邂逅，可以舍命不悔？逻辑的尽头不是理性和秩序的理想国，而是我用生命奉献的爱情！',
         picUrl: '',
         phone: '+110 110 110',
         email: 'you@you.com',
         id: '',
       },
     };
+  },
+  created() {
+    bus.$on('update_userPic', () => {
+      const url = localStorage.getItem('picUrl');
+      this.userInfo.picUrl = url;
+    });
+
+    // 从本地存储中读取头像和信息
+    let userinfo = localStorage.getItem('userInfo');
+    const picUrl = localStorage.getItem('picUrl');
+
+    // console.log(userinfo);
+    userinfo = JSON.parse(userinfo);
+    // console.log(userinfo);
+
+    Object.keys(userinfo).forEach((key) => {
+      this.userInfo[key] = userinfo[key];
+    });
+
+    if (this.userInfo.phone !== null) {
+      this.profileItems[1].itemContent = this.userInfo.phone;
+    }
+
+    if (this.userInfo.email !== null) {
+      this.profileItems[2].itemContent = this.userInfo.email;
+    }
+    this.userInfo.picUrl = picUrl;
+  },
+  beforeDestory() {
+    bus.$off('update_userPic');
   },
 };
 </script>

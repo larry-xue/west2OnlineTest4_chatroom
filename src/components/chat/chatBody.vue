@@ -5,13 +5,6 @@
     <div class="search" v-show="searchShow">
       <searchCmp></searchCmp>
     </div>
-    <picker
-      title="Pick your emoji..."
-      emoji="point_up"
-      @select="addEmoji"
-      style="display:none"
-    />
-
     <div class="showMeg">
       <megItem
         v-for="(item, index) in chatMegs"
@@ -21,15 +14,33 @@
     </div>
     <div class="inputMeg">
       <div class="input">
-        <input type="text" placeholder="Type your message...">
+        <input
+          type="text"
+          placeholder="Type your message..."
+          v-model='content'
+        >
       </div>
-      <div class="pickEmoji">
+      <div
+        class="emojiPick"
+        v-show="showEmojiPick"
+      >
+        <emojiPick></emojiPick>
+      </div>
+      <div
+        @click="switchEmojiShow"
+        class="pickEmoji"
+      >
         <i class="fa fa-smile-o fa-2x"></i>
       </div>
       <div class="sendPic">
-        <i class="fa fa-picture-o fa-2x"></i>
+        <i class="fa fa-picture-o fa-2x">
+          <input
+            type="file"
+            accept="image/png,image/gif,image/jpeg"
+          >
+        </i>
       </div>
-      <div class="sendBtn">
+      <div class="sendBtn" @click='sendMeg'>
         <i class="fa fa-send fa-2x"></i>
       </div>
     </div>
@@ -37,67 +48,79 @@
 </template>
 
 <script>
-import { Picker } from 'emoji-mart-vue';
+import emojiPick from './emojiPick.vue';
 import megItem from './megItem.vue';
 import searchCmp from '../searchCpm.vue';
+import bus from '../../bus';
 
 export default {
   components: {
-    Picker,
+    emojiPick,
     megItem,
     searchCmp,
   },
   data() {
     return {
+      showEmojiPick: false,
+      userInfo: '',
       content: '',
       searchShow: false,
       chatMegs: [
         {
           sender: 'azoux1',
           sendMeg: 'I am typeing...',
-          sendId: '1111',
-          picSrc: '#',
+          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
           sendTime: '',
         },
         {
           sender: 'azoux1',
           sendMeg: '有时候，一个人只要好好活着，就足以拯救某个人。 ——东野圭吾《嫌疑人X的献身》13、对于数学问题，自己想出答案和确认别人的答案是否正确，哪一个更简单，或者困难到何种程度，拟一个别人无法解答的问题和解开那个问题，何者更困难？',
-          sendId: '123123',
-          picSrc: '#',
+          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
           sendTime: '8 hours ago',
         },
         {
           sender: 'azoux1',
           sendMeg: '那些青春期的脆弱自尊，轻易不得触碰，那极有有可能成为对他或她一生的打扰。我们都曾经历那样纯粹、易碎的青春，只是时光的磨砺已让我们懂得逃避与忍气吞声然后慢慢遗忘自己曾经的青春。',
-          sendId: '123123',
-          picSrc: '#',
+          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
           sendTime: '8 hours ago',
         },
         {
           sender: 'azoux1',
           sendMeg: '夕阳在西边的天空渐渐散开。那下面巨大的高楼大厦鳞次栉比，不仅如此，它们周边还伫立着大大小小的建筑物。这就是怀有过野心和希望的人建造的街道。但是，现实当中，累得精疲力尽的人们只是在这些建筑物的缝隙之间匍匐打转地苟且偷生而已。而我，也只是其中的一个。 ——东野圭吾',
-          sendId: '1111',
-          picSrc: '#',
+          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
           sendTime: '8 hours ago',
         },
         {
           sender: 'azoux1',
           sendMeg: '夕阳在西边的天空渐渐散开。那下面巨大的高楼大厦鳞次栉比，不仅如此，它们周边还伫立着大大小小的建筑物。这就是怀有过野心和希望的人建造的街道。但是，现实当中，累得精疲力尽的人们只是在这些建筑物的缝隙之间匍匐打转地苟且偷生而已。而我，也只是其中的一个。 ——东野圭吾',
-          sendId: '123123',
-          picSrc: '#',
+          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
           sendTime: '8 hours ago',
         },
         {
           sender: 'azoux1',
           sendMeg: '我爱我的祖国，爱它的江河湖海，爱它的千峰百嶂，爱它每一刻带给我的小小感动，爱它多姿多彩的民俗风情。生于此，长于此，我无时无刻不热爱这片土地，爱它的繁华，也爱它的苍凉，沧海桑田化为琼楼玉宇，我只愿有朝一日，能乘风好去，长空万里，直下看山河。',
-          sendId: '123123',
-          picSrc: '#',
+          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
           sendTime: '8 hours ago',
         },
       ],
     };
   },
   methods: {
+    switchEmojiShow() {
+      this.showEmojiPick = !this.showEmojiPick;
+      console.log(this.showEmojiPick);
+    },
+    sendMeg() {
+      if (this.content !== '') {
+        this.chatMegs.push({
+          sender: this.userInfo.name,
+          sendMeg: this.content,
+          picSrc: this.userInfo.url,
+        });
+        this.content = '';
+        this.showEmojiPick = !this.showEmojiPick;
+      }
+    },
     addEmoji(e) {
       this.content += e.native;
     },
@@ -105,10 +128,27 @@ export default {
       const showMeg = document.getElementsByClassName('showMeg')[0];
       showMeg.scrollTop = showMeg.scrollHeight;
     },
+    show_search() {
+      this.searchShow = !this.searchShow;
+    },
   },
   mounted() {
-    const showMeg = document.getElementsByClassName('showMeg')[0];
-    showMeg.scrollTop = showMeg.scrollHeight;
+    this.scollBottom();
+  },
+  created() {
+    // 获取用户信息
+    this.userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    this.userInfo.url = localStorage.getItem('picUrl');
+    bus.$on('add_emoji', (item) => {
+      this.content += item;
+    });
+    bus.$on('search_show', this.show_search);
+    bus.$on('scroll_bottom', this.scollBottom);
+  },
+  beforeDestroy() {
+    bus.$off('search_show');
+    bus.$off('scroll_bottom');
+    bus.$off('add_emoji');
   },
 };
 </script>
@@ -148,6 +188,7 @@ export default {
     justify-content: space-around;
     align-items: center;
     border-top: 3px solid rgb(245,246,250);
+    position: relative;
     /* background-color: saddlebrown; */
   }
 
@@ -166,14 +207,39 @@ export default {
     font-size: 1.2em;
   }
 
+  .inputMeg .emojiPick {
+    position: absolute;
+    width: 40%;
+    height: 20vh;
+    top: -230%;
+    right: 10%;
+    z-index: 9999;
+    background-color: #eee;
+  }
+
   .inputMeg .pickEmoji {
-    color: #aaa;
     margin-right: 1%;
+    color: #aaa;
    }
 
    .inputMeg .sendPic {
     color: #aaa;
     margin-right: 1%;
+   }
+
+   .sendPic i {
+     position: relative;
+   }
+
+   .sendPic i input {
+     position: absolute;
+     width: 100%;
+     height: 100%;
+     opacity: 0;
+     top: 0;
+     left: 0;
+     font-size: 0;
+     cursor: pointer;
    }
 
    .inputMeg .sendBtn {

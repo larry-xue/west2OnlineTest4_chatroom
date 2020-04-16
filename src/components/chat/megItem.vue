@@ -3,7 +3,7 @@
     <div class="message"
       :style="{float:floatRight, flexDirection: flexDirect}">
       <div class="pic">
-        <img src="https://pic3.zhimg.com/v2-c073bf0fa922e7c131d070a79cb933dd_is.jpg" alt="">
+        <img v-lazy='message.picSrc' alt="">
       </div>
       <div class="meg" :style="{backgroundColor: megBgc}">
         <div :style="{color: fontColor}">
@@ -18,6 +18,8 @@
 </template>
 
 <script>
+import bus from '../../bus';
+
 export default {
   props: ['message'],
   data() {
@@ -31,7 +33,7 @@ export default {
     };
   },
   mounted() {
-    if (this.message.sendId === '1111') {
+    if (this.message.picSrc === localStorage.getItem('picUrl')) {
       this.floatRight = 'right';
       this.flexDirect = 'row-reverse';
       this.fontColor = 'white';
@@ -39,6 +41,10 @@ export default {
       this.timeOpacity = '0.85';
       this.timeColor = '#d5d5d5';
     }
+    console.log(this.message.picSrc);
+
+    // 消息已添加 scroll划到底部
+    bus.$emit('scroll_bottom');
   },
 };
 </script>
@@ -55,6 +61,7 @@ export default {
     display: flex;
     clear: both;
     margin-top: 2%;
+    word-break: break-all;
   }
   .message .pic {
     width: 5vh;

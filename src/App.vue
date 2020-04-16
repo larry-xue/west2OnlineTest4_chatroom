@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import bus from './bus';
 import alertCpm from './components/alertCpm.vue';
 
 export default {
@@ -48,23 +49,49 @@ export default {
     show() {
       // this.datanow = 2;
     },
+    send2Serve() {
+      this.$socket.emit('login', {
+        username: 'azou',
+        password: 'password',
+      });
+    },
+    receiveMeg() {
+      this.sockets.subscribe('relogin', (data) => {
+        console.log(data);
+        console.log('yoyoyo');
+      });
+    },
   },
-  // sockets: {
-  //   // 这里是监听connect事件
-  //   connect() {
-  //     // 获取每台客服端生成的id
-  //     this.websocketid = this.$socket.id;
-  //     console.log('链接服务器');
-  //   },
-  //   // 监听断开连接，函数
-  //   disconnect() {
-  //     console.log('断开服务器连接');
-  //   },
-  //   // 服务端指定有msg监听的客服端，可接对应发来的收消息，data服务端传的消息
-  //   msg(data) {
-  //     console.log(data);
-  //   },
-  // },
+  created() {
+    bus.$on('meg_send', this.send2Serve());
+    bus.$on('receive_meg', this.receiveMeg());
+    this.sockets.subscribe('createGroup', (data) => {
+      console.log(data);
+    });
+  },
+  beforeDestroy() {
+    bus.$off('meg_send');
+    bus.$off('receive_meg');
+  },
+  mounted() {
+    this.$socket.emit('connect', 1);
+  },
+  sockets: {
+    connect(data) {
+      if (data) {
+        console.log('连接connect', data);
+      }
+    },
+    receive_meg(data) {
+      console.log(data);
+    },
+    disconnect() {
+      console.log('disconnect');
+    },
+    transferMessage(data) {
+      console.log('transfer', data);
+    },
+  },
 };
 </script>
 

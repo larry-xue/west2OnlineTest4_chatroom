@@ -1,3 +1,5 @@
+// 此组件是普通输入框组件，
+// 接收一个对象，包括title placeholder maxlength
 <template>
   <div class="normal">
     <p>{{ settingItem.title }}</p>
@@ -5,7 +7,7 @@
       <input
         type="text"
         :placeholder="settingItem.placeholder"
-        v-model="userInput"
+        v-model.trim="userInput"
         :maxlength="settingItem.maxlength"
       >
     </div>
@@ -39,6 +41,7 @@ export default {
   margin-top: 1.5vh;
   text-align: left;
   color: #888;
+  font-weight: bold;
 }
 
   .normal .inputbox {
