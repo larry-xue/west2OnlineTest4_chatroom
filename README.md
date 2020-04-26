@@ -1,5 +1,10 @@
 # chatdemo
 
+## chat online
+...
+点击 [这里](http://123.57.215.101:3000/chatroom) 开始聊天~
+...
+
 ## Project setup
 ```
 npm install
