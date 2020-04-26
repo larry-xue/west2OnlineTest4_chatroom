@@ -6,7 +6,7 @@
       </p>
       <i :class="item.itemIcon"></i>
       <p class="contentItem">
-        {{ item.itemContent }}
+        {{ content }}
       </p>
       <div class="splitLine" v-if="item.showLine"></div>
     </div>
@@ -15,7 +15,23 @@
 
 <script>
 export default {
-  props: ['item'],
+  props: ['item', 'contentValue'],
+  computed: {
+    content() {
+      const name = this.item.itemName.toLowerCase();
+      let val;
+      if (name === 'time') {
+        const date = new Date();
+        val = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+        // console.log('time', date.getDay(), date);
+      } else if (name === 'country') {
+        val = 'China';
+      } else {
+        val = this.contentValue[name];
+      }
+      return val;
+    },
+  },
 };
 </script>
 

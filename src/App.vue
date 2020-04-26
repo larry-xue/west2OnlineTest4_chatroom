@@ -30,6 +30,7 @@
 
 <script>
 import bus from './bus';
+import CHAT from './socket';
 import alertCpm from './components/alertCpm.vue';
 
 export default {
@@ -38,6 +39,7 @@ export default {
   },
   data() {
     return {
+      CHAT,
       datanow: '/chat',
       alertData: {
         content: 'Alert Test',
@@ -49,48 +51,92 @@ export default {
     show() {
       // this.datanow = 2;
     },
-    send2Serve() {
-      this.$socket.emit('login', {
-        username: 'azou',
-        password: 'password',
-      });
-    },
     receiveMeg() {
-      this.sockets.subscribe('relogin', (data) => {
-        console.log(data);
-        console.log('yoyoyo');
-      });
     },
   },
   created() {
-    bus.$on('meg_send', this.send2Serve());
-    bus.$on('receive_meg', this.receiveMeg());
-    this.sockets.subscribe('createGroup', (data) => {
-      console.log(data);
+    bus.$on('check_change_group', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '确定修改群组信息？',
+        title: 1,
+        event: 'change_group',
+      };
+    });
+
+    bus.$on('dont_show_alert', () => {
+      this.showAlert = false;
+    });
+
+    bus.$on('change_group_success', (data) => {
+      this.showAlert = true;
+      this.alertData = data;
+    });
+
+    bus.$on('empty_group_info', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '输入信息为空 ！',
+        title: 0,
+        event: 'empty_group',
+      };
+    });
+
+    // 用户信息修改--提示
+    bus.$on('update_userInfo_success', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '您的信息已更新 ! ',
+        title: 1,
+        event: 'update_userInfo',
+      };
+    });
+
+    bus.$on('update_userInfo_fail', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '/(ㄒoㄒ)/~~好像发生了啥~信息修改失败了T^T ',
+        title: 1,
+        event: 'fail_userInfo',
+      };
+    });
+
+    // 确认解散房间
+    bus.$on('check_delete_room', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '你确定确定确定确定确定？？要删除房间？？请三思而后行！！',
+        title: 0,
+        event: 'check_delete',
+      };
+    });
+
+    // 拒绝修改——非房主
+    bus.$on('refuse_change_room', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '你好像不是房主嗷(⊙o⊙)？ 不要干坏事~ ',
+        title: 0,
+        event: 'fail_userInfo',
+      };
     });
   },
   beforeDestroy() {
-    bus.$off('meg_send');
-    bus.$off('receive_meg');
+    CHAT.logout();
+    bus.$off('check_change_group');
+    bus.$off('dont_show_alert');
+    bus.$off('change_group_success');
+    bus.$off('empty_group_info');
+    bus.$off('update_userInfo_success');
+    bus.$off('check_delete_room');
+    bus.$off('update_userInfo_fail');
+    bus.$off('refuse_change_room');
   },
   mounted() {
-    this.$socket.emit('connect', 1);
-  },
-  sockets: {
-    connect(data) {
-      if (data) {
-        console.log('连接connect', data);
-      }
-    },
-    receive_meg(data) {
-      console.log(data);
-    },
-    disconnect() {
-      console.log('disconnect');
-    },
-    transferMessage(data) {
-      console.log('transfer', data);
-    },
+    this.$http.post('/user').then((res) => {
+      CHAT.init(res.data.data.uid);
+      localStorage.setItem('uid', res.data.data.uid);
+    });
   },
 };
 </script>

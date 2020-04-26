@@ -13,37 +13,33 @@
     <div class="share" v-show="shareShow">
       <div class="simpleInfo">
         <div class="groupPic">
-          <img
-            src="https://i0.hdslb.com/bfs/bangumi/image/ed4d64464f94c5bb4c474f5e1a5e1fce784c3c79.png@70w_70h_1c_100q.webp"
-          >
+          <img :src="'http://39.97.113.252:8080' + CHAT.roomInfo.icon">
         </div>
         <div class="textInfo">
           <div class="groupName">
-            <h3>Group title</h3>
+            <h3>{{ CHAT.roomInfo.name }}</h3>
           </div>
-          <div class="shareLink">
-            www.bilibili.com/water/space
+          <div class="shareLink" @click="copy">
+            {{ CHAT.roomInfo.url }}
           </div>
         </div>
         <i class="fa fa-paperclip"></i>
       </div>
       <div class="groupIntro">
-        a a sss s s sa w d dfas df dsv s哈哈哈 2 2 22快快快看看看看时代的粉色粉色平方米配色of配色发么欧式富
+        {{ CHAT.roomInfo.describe }}
     </div>
    </div>
 
     <div class="mute" v-show="muteShow">
       <div class="groupInfo">
         <div class="groupPic">
-          <img
-            src="https://i0.hdslb.com/bfs/bangumi/image/d2f15ab77d21f978f426dbaa5cb5aaac430fc88c.jpg@70w_70h_1c_100q.webp"
-          >
+          <img :src="'http://39.97.113.252:8080' + CHAT.roomInfo.icon">
         </div>
         <div>
-          <h2>Group name</h2>
+          <h2>{{ CHAT.roomInfo.name }}</h2>
         </div>
         <div class="groupTopic">
-          #£££££££££££££££就好借好还开卡萨丁 撒大声地阿萨德阿达 I am a kind man ££££££££££?@:~
+          {{ CHAT.roomInfo.topic }}
         </div>
       </div>
     </div>
@@ -67,29 +63,63 @@
          Photo
        </div>
        <uploadAndShowPic></uploadAndShowPic>
-       <normalSettingItem
+       <!-- <normalSettingItem
         v-for="(item, index) in editItem"
         :key="index"
         :settingItem="item"
-       ></normalSettingItem>
-       <div class="submitBtn">submit</div>
+       ></normalSettingItem> -->
+       <div class="editGroupName">
+         <p>Name</p>
+          <div class="inputbox">
+           <input
+            class="editGroupInput"
+            type="text"
+            :value="CHAT.roomInfo.name"
+            maxlength="25"
+           >
+          </div>
+       </div>
+       <div class="editGroupTopic">
+         <p>Topic (optional)</p>
+          <div class="inputbox">
+           <input
+            class="editGroupInput"
+            type="text"
+            :value="CHAT.roomInfo.topic"
+            maxlength="25"
+           >
+          </div>
+       </div>
+       <div class="textarea">
+         <p>Description</p>
+         <textarea
+          maxlength="123"
+          :value='CHAT.roomInfo.describe'
+          class="editGroupInput"
+         >
+         </textarea>
+       </div>
+       <div class="submitBtn" @click="submitChange">submit</div>
      </div>
    </div>
   </div>
 </template>
 
 <script>
+import Clipboard from 'clipboard';
 import bus from '../../bus';
+import CHAT from '../../socket';
 import uploadAndShowPic from '../uploadAndShowImg.vue';
-import normalSettingItem from '../normalSettingItem.vue';
+// import normalSettingItem from '../normalSettingItem.vue';
 
 export default {
   components: {
     uploadAndShowPic,
-    normalSettingItem,
+    // normalSettingItem,
   },
   data() {
     return {
+      CHAT,
       shareShow: false,
       muteShow: false,
       shareMethod: [
@@ -109,26 +139,76 @@ export default {
           classStyle: 'fa fa-weibo',
         },
       ],
-      editItem: [
-        {
-          title: 'Name',
-          placeholder: 'Group Name',
-          maxlength: 25,
-        },
-        {
-          title: 'Topic (optional)',
-          placeholder: 'Group Topic',
-          maxlength: 25,
-        },
-        {
-          title: 'Description',
-          placeholder: 'Group Description',
-          maxlength: 50,
-        },
-      ],
     };
   },
   methods: {
+    copy() {
+      const clip = new Clipboard('.shareLink', {
+        text() {
+          return CHAT.roomInfo.url;
+        },
+      });
+      clip.on('success', () => {
+        // 释放内存
+        clip.destroy();
+      });
+      clip.on('error', () => {
+        clip.destroy();
+      });
+    },
+    makeSure2Change() {
+      const param = new FormData();
+      const sendInfo = {};
+      const input = document.getElementsByClassName('editGroupInput');
+      sendInfo.name = input[0].value;
+      sendInfo.topic = input[1].value;
+      sendInfo.describe = input[2].value;
+      Object.keys(sendInfo).forEach((key) => {
+        param.append(key, sendInfo[key]);
+      });
+
+      const file = this.$children[0].$el.childNodes[2].files[0];
+
+      // 通过append向form对象添加数据
+      //    判断是否上传了图片
+      if (JSON.stringify(sendInfo) !== '{}' || file !== undefined) {
+        // 添加 rid
+        sendInfo.rid = this.CHAT.roomInfo.rid;
+        // 发送修改头像请求
+        // 通过append向form对象添加数据
+        if (file !== undefined) {
+          param.append('folder', 'icon');
+          param.append('file', file, file.name);
+          this.$http.post('/api/files', param).then((response) => {
+            const { url } = response.data.data;
+            // 头像上传完之后拿到url 再发送创建群组请求
+            // const url = `http://39.97.113.252:5000${response.data.data.url}`;
+            sendInfo.icon = url;
+            // console.log(sendInfo, 'in-url');
+            this.CHAT.changeGroupInfo(sendInfo);
+          });
+        } else {
+          // console.log('in no url');
+          sendInfo.icon = 'asd';
+          this.CHAT.changeGroupInfo(sendInfo);
+        }
+        // console.log(sendInfo);
+      }
+      // 清空群头像
+      // console.log('in');
+      const pic = this.$children[0].$el.childNodes[2];
+      pic.value = '';
+    },
+    submitChange() {
+      // 先弹出提示框 确认后再进行修改
+      // console.log(this.CHAT.user.uid);
+      // console.log(this.CHAT.roomInfo.owner);
+      if (this.CHAT.user.uid !== this.CHAT.roomInfo.owner) {
+        bus.$emit('refuse_change_room');
+      } else {
+        bus.$emit('check_change_group');
+      }
+    },
     showMute() {
       this.shareShow = false;
       this.muteShow = true;
@@ -144,17 +224,19 @@ export default {
   created() {
     bus.$on('mute_show', this.showMute);
     bus.$on('share_show', this.showShare);
+    bus.$on('change_group', this.makeSure2Change);
   },
   beforeDestroy() {
     bus.$off('share_show');
     bus.$off('mute_show');
+    bus.$off('change_group');
   },
 };
 </script>
 
 <style scoped>
   img {
-    width: 100%;
+    height: 100%;
   }
 
   li {
@@ -171,6 +253,8 @@ export default {
     height: 100%;
     border-left: 1px #e8e8e8 solid;
     background-color: rgb(245,246,250);
+    overflow-x: none;
+    overflow-y: scroll;
   }
 
   .main nav {
@@ -224,6 +308,7 @@ export default {
     text-align: left;
     white-space: nowrap;
     cursor: pointer;
+    overflow: hidden;
   }
 
   .textInfo div {
@@ -252,6 +337,7 @@ export default {
     padding-top: 11%;
     line-height: 1.7em;
     color: #777;
+    word-wrap: break-word;
     font-size: 0.9em;
     /* background-color: skyblue; */
   }
@@ -334,7 +420,6 @@ export default {
 
   .bottomPart .muteBottom {
     width: 90%;
-    max-height: 1vh;
     box-sizing: border-box;
     margin: 0 auto;
   }
@@ -344,6 +429,54 @@ export default {
     color: #888;
     text-align: left;
     font-weight: bold;
+  }
+
+  .muteBottom p {
+  margin-top: 1.5vh;
+  text-align: left;
+  color: #888;
+  font-weight: bold;
+}
+
+  .inputbox {
+    width: 100%;
+    height: 60px;
+    margin-top: 10px;
+    border-radius: 10px;
+    background-color: rgb(237,238,246);
+    margin-top: 2vh;
+}
+
+  .inputbox input {
+    width: 90%;
+    height: 100%;
+    margin-right: 6.5%;
+    font-size: 15px;
+    outline: none;
+    border: none;
+    background-color:rgb(237,238,246);
+    float: right;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+  .muteBottom .textarea {
+    width: 97%;
+  }
+
+  .textarea textarea {
+    width: 100%;
+    height: 90px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgb(237,238,246);
+    margin-top: 2vh;
+    outline: none;
+    font-size: 17px;
+    text-indent: 0.6em;
+    line-height: 25px;
+    resize: none;
+    color: #444;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   .muteBottom .submitBtn {
@@ -356,5 +489,17 @@ export default {
     line-height: 2em;
     background-color: rgb(1,113,245);
     cursor: pointer;
+  }
+
+  /* 滚动条 */
+  ::-webkit-scrollbar {
+    width:0.1px;
+    background-color: white;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    border-radius:10px;
+    background:rgb(237,238,248);
   }
 </style>

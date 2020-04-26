@@ -88,11 +88,11 @@ export default {
     flex: 1;
     font-size: 1.43em;
     cursor: pointer;
+    transition: background-color 0.6s ease-out;
   }
 
   nav>div:hover {
     border-bottom: slategray 4px solid;
-    box-sizing: border-box;
     background-color: sandybrown;
   }
 
@@ -120,6 +120,7 @@ export default {
     flex: 1;
     flex: 0 0 10%;
     cursor: pointer;
+    transition: background-color 0.6s ease-out;
   }
    ul li:hover {
      background-color: #fff;

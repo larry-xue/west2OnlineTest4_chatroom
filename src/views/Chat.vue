@@ -18,6 +18,7 @@
 import chatNav from '../components/chat/chatNav.vue';
 import chatBody from '../components/chat/chatBody.vue';
 import chatSide from '../components/chat/chatSide.vue';
+// import CHAT from '../socket';
 import bus from '../bus';
 
 export default {
@@ -46,6 +47,8 @@ export default {
   beforeDestroy() {
     bus.$off('side_show');
     bus.$off('side_close');
+  },
+  mounted() {
   },
 
 };

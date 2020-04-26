@@ -1,9 +1,9 @@
 import Vue from 'vue';
 import '@babel/polyfill';
 import 'font-awesome/css/font-awesome.css';
-import VueSocketIO from 'vue-socket.io';
 import VueLazyload from 'vue-lazyload';
 import axios from 'axios';
+import moment from 'moment';
 import router from './router';
 import App from './App.vue';
 // import Bus from 'vue'
@@ -13,13 +13,10 @@ axios.defaults.baseURL = 'http://39.97.113.252:5000';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.withCredentials = true;
 
-Vue.use(VueLazyload);
+moment.locale('en');
+Vue.prototype.$moment = moment;
 
-Vue.use(new VueSocketIO({
-  debug: true,
-  // serve
-  connection: 'http://localhost:3000/',
-}));
+Vue.use(VueLazyload);
 
 new Vue({
   router,

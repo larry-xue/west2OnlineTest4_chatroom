@@ -36,7 +36,6 @@ export default {
       const file = source.target.files[0];
       if (window.FileReader) {
         const fr = new FileReader();
-        console.log(fr);
         fr.onloadend = (e) => {
           this.picsrc = e.target.result;
           this.picsize.width = '';

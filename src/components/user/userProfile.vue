@@ -12,11 +12,11 @@
       <div class="mainInfo">
         <div class="blank"></div>
         <div class="userpic">
-          <img :src="userInfo.picUrl">
+          <img :src="'http://39.97.113.252:5000'+CHAT.user.icon">
         </div>
-        <h3 class="username">{{ userInfo.name }}</h3>
+        <h3 class="username">{{ CHAT.user.name }}</h3>
         <div class="sayings">
-          <p>{{ userInfo.autograpgh }}</p>
+          <p>{{ CHAT.user.autograpgh }}</p>
         </div>
         <div class="blank" style="height: 4.5vh;"></div>
       </div>
@@ -27,6 +27,7 @@
               v-for="(item, index) in profileItems"
               :key='index'
               :item='item'
+              :contentValue='CHAT.user'
             >
             </profile-item>
           </ul>
@@ -37,6 +38,7 @@
 </template>
 
 <script>
+import CHAT from '../../socket';
 import bus from '../../bus';
 
 import profileItem from './userProfileItem.vue';
@@ -49,6 +51,7 @@ export default {
   },
   data() {
     return {
+      CHAT,
       profileItems: [
         {
           itemName: 'Country',
@@ -76,41 +79,12 @@ export default {
         },
       ],
       userInfo: {
-        name: 'Azoux',
-        autograpgh: '究竟爱一个人，可以到什么程度？究竟什么样的邂逅，可以舍命不悔？逻辑的尽头不是理性和秩序的理想国，而是我用生命奉献的爱情！',
-        picUrl: '',
-        phone: '+110 110 110',
-        email: 'you@you.com',
-        id: '',
       },
     };
   },
+  mounted() {
+  },
   created() {
-    bus.$on('update_userPic', () => {
-      const url = localStorage.getItem('picUrl');
-      this.userInfo.picUrl = url;
-    });
-
-    // 从本地存储中读取头像和信息
-    let userinfo = localStorage.getItem('userInfo');
-    const picUrl = localStorage.getItem('picUrl');
-
-    // console.log(userinfo);
-    userinfo = JSON.parse(userinfo);
-    // console.log(userinfo);
-
-    Object.keys(userinfo).forEach((key) => {
-      this.userInfo[key] = userinfo[key];
-    });
-
-    if (this.userInfo.phone !== null) {
-      this.profileItems[1].itemContent = this.userInfo.phone;
-    }
-
-    if (this.userInfo.email !== null) {
-      this.profileItems[2].itemContent = this.userInfo.email;
-    }
-    this.userInfo.picUrl = picUrl;
   },
   beforeDestory() {
     bus.$off('update_userPic');
@@ -186,18 +160,11 @@ export default {
       margin-top: 28px;
       border-radius: 10px;
       background-color:#fff;
-      overflow-x: hidden;
-      overflow-y: scroll;
   }
 
     ::-webkit-scrollbar {
-    width:12px;
+    width:0.1px;
     background-color: white;
-  }
-
-  /* 滚动槽 */
-  ::-webkit-scrollbar-track {
-    border-radius:10px;
   }
 
   /* 滚动条滑块 */

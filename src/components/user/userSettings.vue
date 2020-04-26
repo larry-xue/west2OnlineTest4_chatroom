@@ -32,6 +32,7 @@
 <script>
 import userPicCmp from '../uploadAndShowImg.vue';
 import normalSettingItem from '../normalSettingItem.vue';
+import CHAT from '../../socket';
 import bus from '../../bus';
 
 export default {
@@ -41,11 +42,12 @@ export default {
   },
   data() {
     return {
+      CHAT,
       settingItemInfo: [
         {
           title: 'Name',
           placeholder: 'your name',
-          maxlength: 10,
+          maxlength: 15,
         },
         {
           title: 'Autograpgh',
@@ -66,18 +68,64 @@ export default {
     };
   },
   methods: {
-    uploadImg(param, file) {
+    uploadImg(param, file, upPic, sendInfo) {
       // 通过append向form对象添加数据
-      param.append('folder', 'icon');
-      param.append('file', file, file.name);
-      this.$http.post('/api/files', param).then((response) => {
-        const url = `http://39.97.113.252:5000${response.data.data.url}`;
+      upPic.append('folder', 'icon');
+      upPic.append('file', file, file.name);
+      this.$http.post('/api/files', upPic).then((response) => {
+        // const url = `http://39.97.113.252:5000${response.data.data.url}`;
         // 本地存储url
-        localStorage.setItem('picUrl', url);
-        console.log(111);
-        bus.$emit('update_userPic');
+        // console.log(response);
+        this.CHAT.user.icon = response.data.data.url;
+        localStorage.setItem('userInfo', JSON.stringify(this.CHAT.user));
+        // console.log(JSON.parse(localStorage.getItem('userInfo')), 'userInfo-setting');
+        // put用户信息
+        param.append('icon', response.data.data.url);
+        this.$http.put('/user', param).then((res) => {
+          this.editInfoBack(res, sendInfo);
+        }).catch(() => {
+          // 通知修改失败
+          bus.$emit('update_userInfo_fail');
+        });
       }).catch(() => {
       });
+    },
+
+    // 用于返回之后的数据修改
+    editInfoBack(response, sendInfo) {
+      // 更新localstorage中的id & 直接用sendInfo修改profile中的数据 & 修改头像url
+      //   localstorage
+      // console.log(response);
+      const beforeData = JSON.parse(localStorage.getItem('userInfo'));
+      let url;
+      if (beforeData.icon !== this.CHAT.icon) {
+        url = beforeData.icon;
+      }
+      const { data } = response.data;
+      data.icon = url;
+      data.uid = localStorage.getItem('uid');
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      // console.log(response.data);
+      //   profile
+      Object.keys(sendInfo).forEach((key) => {
+        // profileItems  itemContent  其他信息需要另外修改
+        if (key === 'phone' || key === 'email') {
+          if (key === 'phone') {
+            this.$parent.$children[0].profileItems[1].itemContent = sendInfo[key];
+            this.CHAT.user[key] = sendInfo[key];
+          } else if (key === 'email') {
+            this.$parent.$children[0].profileItems[2].itemContent = sendInfo[key];
+            this.CHAT.user[key] = sendInfo[key];
+            // console.log(CHAT);
+          }
+        } else {
+          // 修改面板
+          // console.log(key);
+          this.CHAT.user[key] = sendInfo[key];
+        }
+      });
+      // 提示修改成功
+      bus.$emit('update_userInfo_success');
     },
     update() {
       // 获取用户输入的数据 (1---length-1)
@@ -89,54 +137,43 @@ export default {
         }
       }
 
+
       // 创建form对象
       const file = this.$children[0].$el.childNodes[2].files[0];
       const param = new FormData();
 
       // 通过append向form对象添加数据
-      //    判断是否上传了图片
-      if (file !== undefined) {
-        // 发送修改头像请求
-        this.uploadImg(param, file);
-      }
-
       //    其他数据
-      console.log(sendInfo);
       let testaramEmpyt = '';
       Object.keys(sendInfo).forEach((key) => {
         param.append(key, sendInfo[key]);
         testaramEmpyt = key;
       });
+
+      //    判断是否上传了图片
+      if (file !== undefined) {
+        // 发送修改头像请求
+        this.uploadImg(param, file, new FormData(), sendInfo);
+      }
+
       // 判断是否只修改图片
-      if (testaramEmpyt !== '') {
+      if (testaramEmpyt !== '' && file === undefined) {
+        param.append('icon', this.CHAT.user.icon);
         this.$http.put('/user', param).then((response) => {
-          // 更新localstorage中的id & 直接用sendInfo修改profile中的数据 & 修改头像url
-          //   localstorage
-          console.log(response);
-          const data = JSON.stringify(response.data.data);
-          localStorage.setItem('userInfo', data);
-          //   profile
-          Object.keys(sendInfo).forEach((key) => {
-            // profileItems  itemContent  其他信息需要另外修改
-            if (key === 'phone' || key === 'email') {
-              if (key === 'phone') {
-                this.$parent.$children[0].profileItems[1].itemContent = sendInfo[key];
-              } else if (key === 'email') {
-                this.$parent.$children[0].profileItems[2].itemContent = sendInfo[key];
-              }
-            } else {
-              // 修改面板
-              // console.log(key);
-              this.$parent.$children[0].userInfo[key] = sendInfo[key];
-            }
-          });
-        }).catch((err) => {
-          console.log(err);
+          this.editInfoBack(response, sendInfo);
+        }).catch(() => {
+          // 通知修改失败
+          bus.$emit('update_userInfo_fail');
         });
+      } else if (file !== undefined) {
+        // 只有图片修改了
+        bus.$emit('update_userInfo_success');
       }
     },
   },
+  mounted() {
 
+  },
 };
 
 </script>
@@ -144,13 +181,8 @@ export default {
 <style scoped>
 
   ::-webkit-scrollbar {
-    width:12px;
+    width:0.1px;
     background-color: white;
-  }
-
-  /* 滚动槽 */
-  ::-webkit-scrollbar-track {
-    border-radius:10px;
   }
 
   /* 滚动条滑块 */

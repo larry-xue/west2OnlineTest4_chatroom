@@ -7,7 +7,7 @@
     </div>
     <div class="showMeg">
       <megItem
-        v-for="(item, index) in chatMegs"
+        v-for="(item, index) in CHAT.megArr"
         :key="index"
         :message="item"
       ></megItem>
@@ -18,6 +18,7 @@
           type="text"
           placeholder="Type your message..."
           v-model='content'
+          @keyup.enter="sendMeg"
         >
       </div>
       <div
@@ -51,6 +52,7 @@
 import emojiPick from './emojiPick.vue';
 import megItem from './megItem.vue';
 import searchCmp from '../searchCpm.vue';
+import CHAT from '../../socket';
 import bus from '../../bus';
 
 export default {
@@ -61,65 +63,62 @@ export default {
   },
   data() {
     return {
+      CHAT,
       showEmojiPick: false,
       userInfo: '',
       content: '',
       searchShow: false,
-      chatMegs: [
-        {
-          sender: 'azoux1',
-          sendMeg: 'I am typeing...',
-          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
-          sendTime: '',
-        },
-        {
-          sender: 'azoux1',
-          sendMeg: '有时候，一个人只要好好活着，就足以拯救某个人。 ——东野圭吾《嫌疑人X的献身》13、对于数学问题，自己想出答案和确认别人的答案是否正确，哪一个更简单，或者困难到何种程度，拟一个别人无法解答的问题和解开那个问题，何者更困难？',
-          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
-          sendTime: '8 hours ago',
-        },
-        {
-          sender: 'azoux1',
-          sendMeg: '那些青春期的脆弱自尊，轻易不得触碰，那极有有可能成为对他或她一生的打扰。我们都曾经历那样纯粹、易碎的青春，只是时光的磨砺已让我们懂得逃避与忍气吞声然后慢慢遗忘自己曾经的青春。',
-          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
-          sendTime: '8 hours ago',
-        },
-        {
-          sender: 'azoux1',
-          sendMeg: '夕阳在西边的天空渐渐散开。那下面巨大的高楼大厦鳞次栉比，不仅如此，它们周边还伫立着大大小小的建筑物。这就是怀有过野心和希望的人建造的街道。但是，现实当中，累得精疲力尽的人们只是在这些建筑物的缝隙之间匍匐打转地苟且偷生而已。而我，也只是其中的一个。 ——东野圭吾',
-          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
-          sendTime: '8 hours ago',
-        },
-        {
-          sender: 'azoux1',
-          sendMeg: '夕阳在西边的天空渐渐散开。那下面巨大的高楼大厦鳞次栉比，不仅如此，它们周边还伫立着大大小小的建筑物。这就是怀有过野心和希望的人建造的街道。但是，现实当中，累得精疲力尽的人们只是在这些建筑物的缝隙之间匍匐打转地苟且偷生而已。而我，也只是其中的一个。 ——东野圭吾',
-          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
-          sendTime: '8 hours ago',
-        },
-        {
-          sender: 'azoux1',
-          sendMeg: '我爱我的祖国，爱它的江河湖海，爱它的千峰百嶂，爱它每一刻带给我的小小感动，爱它多姿多彩的民俗风情。生于此，长于此，我无时无刻不热爱这片土地，爱它的繁华，也爱它的苍凉，沧海桑田化为琼楼玉宇，我只愿有朝一日，能乘风好去，长空万里，直下看山河。',
-          picSrc: 'http://39.97.113.252:5000/static/icon/default.jpg',
-          sendTime: '8 hours ago',
-        },
-      ],
     };
   },
   methods: {
     switchEmojiShow() {
       this.showEmojiPick = !this.showEmojiPick;
-      console.log(this.showEmojiPick);
     },
     sendMeg() {
-      if (this.content !== '') {
-        this.chatMegs.push({
-          sender: this.userInfo.name,
-          sendMeg: this.content,
-          picSrc: this.userInfo.url,
-        });
-        this.content = '';
-        this.showEmojiPick = !this.showEmojiPick;
+      const file = document.getElementsByClassName('sendPic')[0].childNodes[0].childNodes[0].files[0];
+      let picurl = '';
+      let message;
+
+      if (file !== undefined || this.content !== '') {
+        const inputContent = this.content;
+
+        if (file !== undefined) {
+          const param = new FormData();
+          param.append('folder', 'pic');
+          param.append('file', file, file.name);
+          this.$http.post('/api/files', param).then((response) => {
+            picurl = 'http://39.97.113.252:5000';
+            picurl += response.data.data.url;
+            message = {
+              rid: this.CHAT.roomInfo.rid,
+              content: inputContent,
+              url: picurl,
+              type: 0,
+              uid: this.CHAT.user.uid,
+              typeName: 'message',
+            };
+            // 发送消息-----因为是异步的所以不得不放进去
+            this.CHAT.sendMeg(message);
+            // const url = `http://39.97.113.252:5000${response.data.data.url}`;
+          });
+        } else {
+          message = {
+            rid: this.CHAT.roomInfo.rid,
+            content: inputContent,
+            uid: this.CHAT.user.uid,
+            type: 0,
+            typeName: 'message',
+          };
+          // 发送消息
+          this.CHAT.sendMeg(message);
+        }
       }
+
+      this.content = '';
+      // 发送图片完成后清除
+      const clearFile = document.getElementsByClassName('sendPic')[0].childNodes[0].childNodes[0];
+      clearFile.value = '';
+      this.showEmojiPick = false;
     },
     addEmoji(e) {
       this.content += e.native;
@@ -282,4 +281,6 @@ export default {
     border-radius:10px;
     background:rgb(237,238,248);
   }
+
+
 </style>

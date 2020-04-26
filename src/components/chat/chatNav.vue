@@ -2,11 +2,11 @@
   <nav>
     <div class="groupInfo">
       <div class="picInfo">
-        <img src="https://pic3.zhimg.com/v2-c073bf0fa922e7c131d070a79cb933dd_is.jpg" alt="">
+        <img :src="'http://39.97.113.252:8080' + CHAT.roomInfo.icon">
       </div>
       <div class="textInfo">
-        <h3>group title</h3>
-        <p>group information group information</p>
+        <h3>{{ CHAT.roomInfo.name }}</h3>
+        <p>{{ CHAT.onlineUserCount }} Members ~ {{ CHAT.roomInfo.topic }}</p>
       </div>
     </div>
     <div class="operator userSelect">
@@ -24,7 +24,7 @@
             <span>Mute</span>
             <i class="fa fa-sliders fa-lg"></i>
           </div>
-          <div class="delete">
+          <div class="delete" @click="deleteChat">
             <span>Delete</span>
             <i class="fa fa-trash-o fa-lg"></i>
           </div>
@@ -35,14 +35,22 @@
 
 <script>
 import bus from '../../bus';
+import CHAT from '../../socket';
 
 export default {
   data() {
     return {
       showMoreOPtion: false,
+      CHAT,
     };
   },
   methods: {
+    deleteChat() {
+      bus.$emit('check_delete_room');
+    },
+    sure2Delete() {
+      this.CHAT.fireGroup();
+    },
     searchShow() {
       // close moreOp
       this.showMoreOPtion = false;
@@ -68,6 +76,12 @@ export default {
       bus.$emit('mute_show');
       this.showMoreOPtion = false;
     },
+  },
+  mounted() {
+    bus.$on('sure_delete_room', this.sure2Delete);
+  },
+  beforeDestroy() {
+    bus.$off('sure_delete_room');
   },
 };
 </script>

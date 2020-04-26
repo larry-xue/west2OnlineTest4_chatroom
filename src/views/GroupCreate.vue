@@ -25,6 +25,7 @@
 import searchCmp from '../components/searchCpm.vue';
 import normalSettingItem from '../components/normalSettingItem.vue';
 import updatePhoto from '../components/uploadAndShowImg.vue';
+import CHAT from '../socket';
 // import bus from '../bus';
 
 export default {
@@ -35,6 +36,10 @@ export default {
   },
   data() {
     return {
+      CHAT,
+      alertData: {
+        content: 'asdasdasdasdasdasdsadasdasdasd',
+      },
       createItem: [
         {
           title: 'Name',
@@ -82,27 +87,22 @@ export default {
           param.append('folder', 'icon');
           param.append('file', file, file.name);
           this.$http.post('/api/files', param).then((response) => {
-            console.log(response);
+            const { url } = response.data.data;
             // 头像上传完之后拿到url 再发送创建群组请求
-            this.$socket.emit('create_room', sendInfo);
             // const url = `http://39.97.113.252:5000${response.data.data.url}`;
+            sendInfo.icon = url;
+            this.CHAT.createGroup(sendInfo);
           });
         } else {
-          console.log('in');
-          this.$socket.emit('create_room', sendInfo);
-          this.$socket.emit('relogin', (res) => {
-            console.log(res);
-          });
+          this.CHAT.createGroup(sendInfo);
         }
       } else {
-        console.log('alert! 请至少保证输入名字！');
+        // console.log('alert! 请至少保证输入名字！');
       }
     },
   },
   mounted() {
-    this.$socket.on('create_room', (res) => {
-      console.log(res);
-    });
+
   },
 };
 </script>
@@ -112,6 +112,7 @@ export default {
     width: 90%;
     margin: 0 auto;
     text-align: left;
+    position: relative;
   }
 
   .createGroup .settings {
