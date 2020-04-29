@@ -5,23 +5,27 @@
       <p>Update your profile details</p>
     </nav>
     <div class="content">
-      <div class="account">
-        <h2>Account</h2>
-        <p>Update your profile details</p>
-        <i class="fa fa-user-o"></i>
-      </div>
-      <div class="userpic">
-        <p class="itemtitle">Avatar</p>
-        <userPicCmp></userPicCmp>
-      </div>
-      <div class="normalInfo">
-        <normalSettingItem
-          v-for="(item, index) in settingItemInfo"
-          :key="index"
-          :settingItem="item"
-        >
-      </normalSettingItem>
-      </div>
+      <vue-scroll
+        :ops="ops"
+      >
+        <div class="account">
+          <h2>Account</h2>
+          <p>Update your profile details</p>
+          <i class="fa fa-user-o"></i>
+        </div>
+        <div class="userpic">
+          <p class="itemtitle">Avatar</p>
+          <userPicCmp></userPicCmp>
+        </div>
+        <div class="normalInfo">
+          <normalSettingItem
+            v-for="(item, index) in settingItemInfo"
+            :key="index"
+            :settingItem="item"
+          >
+        </normalSettingItem>
+        </div>
+      </vue-scroll>
     </div>
     <div class="saveChange">
       <button @click="update">Save Preferences</button>
@@ -43,6 +47,40 @@ export default {
   data() {
     return {
       CHAT,
+      ops: {
+        vuescroll: {
+          mode: 'native',
+          sizeStrategy: 'percent',
+          detectResize: true,
+        },
+        scrollPanel: {
+          scrollingY: true,
+          scrollingX: false,
+          speed: 2000,
+          easing: 'easeInOutQuart',
+          verticalNativeBarPos: 'right',
+          maxHeight: undefined,
+          maxWidth: undefined,
+        },
+        rail: {
+          background: '#01a99a',
+          opacity: 0,
+          size: '6px',
+          gutterOfSide: '2px',
+        },
+        bar: {
+          showDelay: 500,
+          onlyShowBarOnScroll: true,
+          keepShow: false,
+          background: '#c1c1c1',
+          opacity: 1,
+          hoverStyle: false,
+          specifyBorderRadius: false,
+          minSize: false,
+          size: '6px',
+          disable: false,
+        },
+      },
       settingItemInfo: [
         {
           title: 'Name',
@@ -87,7 +125,6 @@ export default {
           // 通知修改失败
           bus.$emit('update_userInfo_fail');
         });
-      }).catch(() => {
       });
     },
 
@@ -125,21 +162,20 @@ export default {
         }
       });
       // 提示修改成功
+      this.CHAT.tellOtherUserInfo();
       bus.$emit('update_userInfo_success');
     },
     update() {
       // 获取用户输入的数据 (1---length-1)
-      const child = this.$children;
+      const child = this.$children[0].$children[0].$children;
       const sendInfo = {};
       for (let i = 1; i < child.length; i += 1) {
         if (child[i].userInput !== '') {
           sendInfo[child[i].$props.settingItem.title.toLowerCase()] = child[i].userInput;
         }
       }
-
-
       // 创建form对象
-      const file = this.$children[0].$el.childNodes[2].files[0];
+      const file = this.$children[0].$children[0].$children[0].$el.childNodes[2].files[0];
       const param = new FormData();
 
       // 通过append向form对象添加数据
@@ -171,25 +207,11 @@ export default {
       }
     },
   },
-  mounted() {
-
-  },
 };
 
 </script>
 
 <style scoped>
-
-  ::-webkit-scrollbar {
-    width:0.1px;
-    background-color: white;
-  }
-
-  /* 滚动条滑块 */
-  ::-webkit-scrollbar-thumb {
-    border-radius:10px;
-    background:rgb(237,238,248);
-  }
 
   .settings {
     width: 100%;
@@ -214,10 +236,6 @@ export default {
     width: 80%;
     height: 65vh;
     margin: 0 5% 0 15%;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    /* background-color: #ccc; */
-
   }
 
   .content .account {

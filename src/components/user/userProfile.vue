@@ -22,15 +22,19 @@
       </div>
       <div class="otherInfoOuter">
         <div class="otherInfo">
-          <ul>
-            <profile-item
-              v-for="(item, index) in profileItems"
-              :key='index'
-              :item='item'
-              :contentValue='CHAT.user'
-            >
-            </profile-item>
-          </ul>
+          <vue-scroll
+           :ops="ops"
+          >
+            <ul>
+              <profile-item
+                v-for="(item, index) in profileItems"
+                :key='index'
+                :item='item'
+                :contentValue='CHAT.user'
+              >
+              </profile-item>
+            </ul>
+          </vue-scroll>
         </div>
       </div>
     </div>
@@ -52,6 +56,41 @@ export default {
   data() {
     return {
       CHAT,
+      ops: {
+        vuescroll: {
+          mode: 'native',
+          sizeStrategy: 'percent',
+          detectResize: true,
+        },
+        scrollPanel: {
+          initialScrollY: '100%',
+          scrollingY: true,
+          scrollingX: false,
+          speed: 200,
+          easing: 'easeInOutQuart',
+          verticalNativeBarPos: 'right',
+          maxHeight: undefined,
+          maxWidth: undefined,
+        },
+        rail: {
+          background: '#01a99a',
+          opacity: 0,
+          size: '6px',
+          gutterOfSide: '2px',
+        },
+        bar: {
+          showDelay: 500,
+          onlyShowBarOnScroll: true,
+          keepShow: false,
+          background: '#c1c1c1',
+          opacity: 1,
+          hoverStyle: false,
+          specifyBorderRadius: false,
+          minSize: false,
+          size: '6px',
+          disable: false,
+        },
+      },
       profileItems: [
         {
           itemName: 'Country',

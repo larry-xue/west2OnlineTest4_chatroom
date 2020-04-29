@@ -7,7 +7,7 @@
         <img :src="icon" alt="">
       </div>
       <div class="meg" :style="{backgroundColor: megBgc}">
-        <div class="name">
+        <div class="name" v-if="showName">
         {{ name }}
         </div>
         <div class="img" v-show="showPic">
@@ -41,7 +41,8 @@ export default {
   data() {
     return {
       CHAT,
-      url: 'http://39.97.113.252:5000',
+      showName: true,
+      url: 'http://39.97.113.252:8080',
       username: '',
       floatRight: 'left',
       flexDirect: 'unset',
@@ -49,7 +50,7 @@ export default {
       megBgc: 'rgb(245,246,250)',
       timeOpacity: '1',
       timeColor: '#aaa',
-      showPic: true,
+      showPic: false,
       time: '',
     };
   },
@@ -71,7 +72,8 @@ export default {
         return this.url + url;
       },
       set() {
-        this.url = 'http://39.97.113.252:8080';
+        this.url = 'http://39.97.113.252:5000';
+        // this.icon = `http://39.97.113.252:5000${val}`;
       },
     },
     name: {
@@ -81,7 +83,7 @@ export default {
         if (this.message.uid !== undefined && this.CHAT.user.uid !== this.message.uid && this.CHAT.groupMember[this.message.uid] !== undefined) {
           username = this.CHAT.groupMember[this.message.uid].name;
         }
-        return this.username + username;
+        return `${this.username + username}:`;
       },
       set() {
         this.username += ' ';
@@ -89,6 +91,7 @@ export default {
     },
   },
   mounted() {
+    // console.log(this.CHAT.megArr);
     if (this.message.uid === this.CHAT.user.uid) {
       this.floatRight = 'right';
       this.flexDirect = 'row-reverse';
@@ -96,30 +99,45 @@ export default {
       this.megBgc = 'rgb(1,118,255)';
       this.timeOpacity = '0.85';
       this.timeColor = '#d5d5d5';
+      this.showName = false;
     // eslint-disable-next-line max-len
     } else if (this.CHAT.groupMember[this.message.uid] === undefined && this.message.uid !== undefined) {
       // 去请求其他成员的信息
       // console.log(this.message.uid);
       CHAT.getOtherUser(this.message.uid);
     }
-    if (this.message.url === null) {
-      this.showPic = false;
+    if (this.message.url !== null) {
+      this.showPic = true;
     }
 
-    this.time = this.$moment().utc(Number(this.message.time) * 1000).format('lll');
-    // console.log(this.time);
+    // this.time = this.$moment().utc(Number(this.message.time) * 1000).format(MM-DD HH:mm:ss');
+    const time = Math.floor(Number(this.message.time) * 1000);
+    this.time = this.$moment(time).format('YYYY/MM/DD HH:mm:ss');
+    // console.log(Math.floor(Number(this.message.time)), this.message.content);
+    // console.log(this.$moment().format('YYYY/MM/DD hh:mm:ss'));
 
     // 消息已添加 scroll划到底部
-    bus.$emit('scroll_bottom');
+    if (this.message.needScroll) {
+      setTimeout(() => {
+        this.message.needScroll = false;
+        bus.$emit('scroll_bottom');
+      }, 200);
+    }
   },
   created() {
-    bus.$on('other_user', (data) => {
-      this.icon = data.icon;
-      this.name = data.name;
+    // bus.$on('other_user', (data) => {
+    //   this.icon = data.icon;
+    //   console.log('icon', data);
+    //   this.name = data.name;
+    // });
+    bus.$on('change_other_info', (data) => {
+      console.log(data);
+      console.log('in ');
     });
   },
   beforeDestroy() {
-    bus.$off('other_user');
+    // bus.$off('other_user');
+    bus.$off('change_other_info');
   },
 };
 </script>
@@ -150,7 +168,7 @@ export default {
   }
 
   .cover .message {
-    max-width: 45%;
+    max-width: 70%;
     display: flex;
     clear: both;
     margin-top: 2%;
@@ -186,8 +204,9 @@ export default {
   }
 
   .meg .name {
+    margin-top: 3px;
     text-align: left;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bolder;
   }
 

@@ -5,7 +5,7 @@
         <img src="../public/logo.png">
       </div>
       <nav>
-        <i class="fa fa-pencil-square-o fa-2x" @click="show">
+        <i class="fa fa-pencil-square-o fa-2x">
           <router-link to="/GroupCreate"></router-link>
         </i>
         <i class="fa fa-comment-o fa-2x">
@@ -48,13 +48,13 @@ export default {
     };
   },
   methods: {
-    show() {
-      // this.datanow = 2;
-    },
-    receiveMeg() {
+    beforeunloadFn() {
+      this.CHAT.logout();
     },
   },
   created() {
+    // 注：fail_user 这个事件确认取消都不触发其他事件 故用作一些不痛不痒的提醒
+    window.addEventListener('beforeunload', (e) => this.beforeunloadFn(e));
     bus.$on('check_change_group', () => {
       this.showAlert = true;
       this.alertData = {
@@ -120,9 +120,29 @@ export default {
         event: 'fail_userInfo',
       };
     });
+    // 房间号错误
+    bus.$on('err_rid', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '你好像输了个错误群聊链接嗷~~',
+        title: 0,
+        event: 'fail_userInfo',
+      };
+    });
+
+    // copy
+    bus.$on('copy_success', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '复制成功辣~~快去分享吧~~',
+        title: 0,
+        event: 'fail_userInfo',
+      };
+    });
   },
   beforeDestroy() {
     CHAT.logout();
+    window.removeEventListener('beforeunload', (e) => this.beforeunloadFn(e));
     bus.$off('check_change_group');
     bus.$off('dont_show_alert');
     bus.$off('change_group_success');
@@ -131,6 +151,7 @@ export default {
     bus.$off('check_delete_room');
     bus.$off('update_userInfo_fail');
     bus.$off('refuse_change_room');
+    bus.$off('err_rid');
   },
   mounted() {
     this.$http.post('/user').then((res) => {

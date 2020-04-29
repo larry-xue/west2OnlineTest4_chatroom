@@ -25,12 +25,19 @@ const CHAT = {
     owner: '', // 房主的sid
     url: '',
   },
+  searchList: [
+    // 返回聊天记录搜索结果
+  ],
   socket: null,
   onlineUserCount: 0,
 
   // 登出
   logout() {
+    this.socket.emit('leave_room', {
+      rid: CHAT.roomInfo.rid,
+    });
     this.socket.disconnect();
+    // console.login('123');
   },
 
   // 更新用户信息
@@ -61,11 +68,16 @@ const CHAT = {
     });
   },
 
+  // 通知其他用户自己的信息已经更新
+  tellOtherUserInfo() {
+    this.socket.emit('flash_user');
+  },
+
   // 获取消息记录
-  getMegList() {
-    this.socket.emit('get_message_lis', {
-      rid: CHAT.roomInfo.rid,
-      // index: ,
+  getMegList(roomid, megIndex) {
+    this.socket.emit('get_message_list', {
+      rid: roomid,
+      index: megIndex,
     });
   },
 
@@ -85,6 +97,8 @@ const CHAT = {
     const { href } = window.location;
     const tempurl = href.split('?');
     let roomid = '';
+    // 房间号是否有效
+    let status = 0;
     // eslint-disable-next-line no-empty
     if (href === tempurl[0]) {
     } else {
@@ -142,11 +156,15 @@ const CHAT = {
 
     // 普通成员接收房间信息
     this.socket.on('room_message', (res) => {
-      const { url } = CHAT.roomInfo;
-      CHAT.roomInfo = res.data;
-      CHAT.roomInfo.url = url;
-      // console.log('room-message', res.data);
-      // console.log(CHAT.roomInfo);
+      status = res.status;
+      if (res.status !== 404) {
+        const { url } = CHAT.roomInfo;
+        CHAT.roomInfo = res.data;
+        CHAT.roomInfo.url = url;
+        // console.log(CHAT.roomInfo);
+      } else {
+        bus.$emit('err_rid');
+      }
     });
 
     this.socket.emit('join_room', {
@@ -163,32 +181,52 @@ const CHAT = {
       const temp = res;
       temp.typeName = 'message';
       // console.log(res);
-      CHAT.megArr.push(temp);
+      temp.needScroll = true;
+      if (CHAT.groupMember[temp.uid] === undefined) {
+        CHAT.getOtherUser(temp.uid);
+      }
+      setTimeout(() => {
+        CHAT.megArr.push(temp);
+      }, 200);
     });
 
     // 接收消息列表
-    this.getMegList();
-    this.socket.on('message_list', () => {
-      // console.log(res);
+    this.getMegList(roomid, -1);
+    this.socket.on('message_list', (res) => {
+      const list = res.data;
+      const length = list.length - 1;
+      for (let i = length; i >= 0; i -= 1) {
+        list[i].typeName = 'message';
+        list[i].needScroll = false;
+        if (CHAT.groupMember[list[i].uid] === undefined) {
+          CHAT.getOtherUser(list[i].uid);
+        }
+        setTimeout(() => {
+          CHAT.megArr.unshift(list[i]);
+        }, 300);
+      }
     });
 
     // 接收解散群聊消息
-    // this.socket.on('room_alive', (res) => {
-    //   console.log(res);
-    // });
+    this.socket.on('room_alive', () => {
+    });
 
     // 接收查询其他用户的信息
     this.socket.on('user_inform', (res) => {
       if (res.data.message !== '"用户已注销"') {
         CHAT.groupMember[res.data.uid] = res.data;
         // console.log(CHAT.groupMember);
-        bus.$emit('other_user', res.data);
       }
     });
 
     // 监听公告
     this.socket.on('announcement', (res) => {
-      CHAT.megArr.push(res.data);
+      if (status !== 404) {
+        const meg = res.data;
+        meg.typeName = 'announce';
+        meg.needScroll = true;
+        CHAT.megArr.push(meg);
+      }
     });
 
     // 监听当前在线人数
@@ -199,9 +237,16 @@ const CHAT = {
 
     // 退出房间
     this.socket.on('disconnect', (res) => {
-      CHAT.megArr.push(res.data);
+      const meg = {
+        content: res,
+      };
+      // CHAT.megArr.push(res.data);
+      meg.typeName = 'announce';
+      meg.needScroll = true;
+      CHAT.megArr.push(meg);
     });
     // console.log(window.location.href);
+    // this.socket.emit('flash_user');
   },
 };
 

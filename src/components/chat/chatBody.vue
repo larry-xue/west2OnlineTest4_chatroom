@@ -3,14 +3,42 @@
     <!-- <picker title="Pick your emoji…" emoji="point_up" /> -->
     <!-- <picker set="emojione" /> -->
     <div class="search" v-show="searchShow">
-      <searchCmp></searchCmp>
+      <searchCmp
+        :rid="CHAT.roomInfo.rid"
+      ></searchCmp>
+      <div class="searchResult" v-if="show_search_result">
+        <vue-scroll
+          :ops="ops"
+        >
+          <ul>
+            <li
+              v-for="item in CHAT.searchList"
+              :key="item.index"
+            >
+            <h3 class="searchName">{{ item.name }}:</h3>
+            <p class="searchContent">content: {{ item.content }}</p>
+            <p class="searchUrl">picurl: {{ item.url }}</p>
+            <p class="searchTime">{{ item.time }}</p>
+            </li>
+          </ul>
+        </vue-scroll>
+      </div>
     </div>
     <div class="showMeg">
-      <megItem
-        v-for="(item, index) in CHAT.megArr"
-        :key="index"
-        :message="item"
-      ></megItem>
+      <vue-scroll
+        :ops="ops"
+        slot="refresh-start"
+        ref="body"
+      >
+        <div class="beforeMeg" @click="beforeMeglist">
+          查看更早滴聊天记录
+        </div>
+        <megItem
+          v-for="item in CHAT.megArr"
+          :key="item.index"
+          :message="item"
+        ></megItem>
+      </vue-scroll>
     </div>
     <div class="inputMeg">
       <div class="input">
@@ -64,6 +92,42 @@ export default {
   data() {
     return {
       CHAT,
+      ops: {
+        vuescroll: {
+          mode: 'native',
+          sizeStrategy: 'percent',
+          detectResize: true,
+        },
+        scrollPanel: {
+          initialScrollY: '100%',
+          scrollingY: true,
+          scrollingX: false,
+          speed: 200,
+          easing: 'easeInOutQuart',
+          verticalNativeBarPos: 'right',
+          maxHeight: undefined,
+          maxWidth: undefined,
+        },
+        rail: {
+          background: '#01a99a',
+          opacity: 0,
+          size: '6px',
+          gutterOfSide: '2px',
+        },
+        bar: {
+          showDelay: 500,
+          onlyShowBarOnScroll: true,
+          keepShow: false,
+          background: '#c1c1c1',
+          opacity: 1,
+          hoverStyle: false,
+          specifyBorderRadius: false,
+          minSize: false,
+          size: '6px',
+          disable: false,
+        },
+      },
+      show_search_result: false,
       showEmojiPick: false,
       userInfo: '',
       content: '',
@@ -71,6 +135,16 @@ export default {
     };
   },
   methods: {
+    beforeMeglist() {
+      // 消息回滚十条
+      console.log(this.CHAT.megArr);
+      if (this.CHAT.megArr[0].index > 0) {
+        this.CHAT.getMegList(this.CHAT.roomInfo.rid, this.CHAT.megArr[0].index);
+      } else {
+        console.log(this.CHAT.megArr[0].index);
+        // document.getElementsByClassName('alert')[0].click();
+      }
+    },
     switchEmojiShow() {
       this.showEmojiPick = !this.showEmojiPick;
     },
@@ -124,15 +198,20 @@ export default {
       this.content += e.native;
     },
     scollBottom() {
-      const showMeg = document.getElementsByClassName('showMeg')[0];
-      showMeg.scrollTop = showMeg.scrollHeight;
+      // const showMeg = document.getElementsByClassName('showMeg')[0].childNodes[0];
+      // showMeg.scrollTop = showMeg.scrollHeight;
+      this.$refs.body.scrollTo(
+        {
+          y: '100%',
+        },
+        900,
+      );
     },
     show_search() {
       this.searchShow = !this.searchShow;
     },
   },
   mounted() {
-    this.scollBottom();
   },
   created() {
     // 获取用户信息
@@ -143,11 +222,16 @@ export default {
     });
     bus.$on('search_show', this.show_search);
     bus.$on('scroll_bottom', this.scollBottom);
+    bus.$on('show_search_result', () => {
+      // this.show_search_result = false;
+      this.show_search_result = true;
+    });
   },
   beforeDestroy() {
     bus.$off('search_show');
     bus.$off('scroll_bottom');
     bus.$off('add_emoji');
+    bus.$off('show_search_result');
   },
 };
 </script>
@@ -160,13 +244,55 @@ export default {
     flex-wrap: wrap;
     position: relative;
   }
+
   .bodyMain .search {
     width: 80%;
     height: 10%;
     position: absolute;
     top: 0;
     left: 10%;
+    z-index: 9999;
     /* background-color: sandybrown; */
+  }
+
+  .search .searchResult {
+    margin-top: 10px;
+    background-color: #fff;
+    opacity: 0.9;
+    height: 300px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-top: none;
+
+    border-radius: 20px;
+  }
+
+  .searchResult ul {
+    list-style: none;
+    cursor: text;
+  }
+
+  .searchResult ul li {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-indent: 1em;
+    transition: background-color 0.9s;
+  }
+
+  .searchResult ul li h3 {
+    text-align: left;
+  }
+
+  .searchResult ul li p {
+    word-wrap: break-word;
+    padding-left: 2em;
+    text-indent: 0;
+    text-align: left;
+  }
+
+  .searchResult ul li:hover {
+    opacity: 1;
+    background-color: rgb(142,200,255);
   }
 
   .bodyMain .showMeg {
@@ -176,6 +302,21 @@ export default {
     align-self: flex-start;
     overflow-x: hidden;
     overflow-y: scoll;
+  }
+
+  .showMeg .beforeMeg {
+    width: 95%;
+    float: left;
+    margin: 0 auto;
+    margin-top: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: text-shadow 0.6s;
+    color: cornflowerblue;
+  }
+
+  .beforeMeg:hover {
+    text-shadow: .2rem 0rem .5rem
   }
 
   .bodyMain .inputMeg {
@@ -266,21 +407,21 @@ export default {
     color: #ccc;
   }
 
-  ::-webkit-scrollbar {
+  /* ::-webkit-scrollbar {
     width:12px;
     background-color: white;
-  }
+  } */
 
   /* 滚动槽 */
-  ::-webkit-scrollbar-track {
+  /* ::-webkit-scrollbar-track {
     border-radius:10px;
-  }
+  } */
 
   /* 滚动条滑块 */
-  ::-webkit-scrollbar-thumb {
+  /* ::-webkit-scrollbar-thumb {
     border-radius:10px;
     background:rgb(237,238,248);
-  }
+  } */
 
 
 </style>

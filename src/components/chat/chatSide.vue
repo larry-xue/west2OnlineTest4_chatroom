@@ -147,6 +147,7 @@ export default {
         text() {
           return CHAT.roomInfo.url;
         },
+        // 提示复制成功
       });
       clip.on('success', () => {
         // 释放内存
@@ -155,6 +156,7 @@ export default {
       clip.on('error', () => {
         clip.destroy();
       });
+      bus.$emit('copy_success');
     },
     makeSure2Change() {
       const param = new FormData();
@@ -189,7 +191,6 @@ export default {
           });
         } else {
           // console.log('in no url');
-          sendInfo.icon = 'asd';
           this.CHAT.changeGroupInfo(sendInfo);
         }
         // console.log(sendInfo);

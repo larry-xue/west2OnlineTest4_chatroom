@@ -17,6 +17,9 @@
 // title：提示名
 // content： 内容
 // event： 确认之后要触发的事件
+
+// 04/28新增无需确认提示框：
+//
 import bus from '../bus';
 
 export default {
@@ -47,6 +50,7 @@ export default {
 
       if (this.alertInfo.event === 'check_delete') {
         bus.$emit('sure_delete_room');
+        bus.$emit('dont_show_alert');
       }
     },
     nonono() {
