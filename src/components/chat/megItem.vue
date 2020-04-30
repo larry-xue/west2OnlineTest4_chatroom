@@ -68,7 +68,6 @@ export default {
         } else if (this.CHAT.groupMember[this.message.uid] !== undefined) {
           url = this.CHAT.groupMember[this.message.uid].icon;
         }
-        // console.log(1);
         return this.url + url;
       },
       set() {
@@ -82,6 +81,10 @@ export default {
         // eslint-disable-next-line max-len
         if (this.message.uid !== undefined && this.CHAT.user.uid !== this.message.uid && this.CHAT.groupMember[this.message.uid] !== undefined) {
           username = this.CHAT.groupMember[this.message.uid].name;
+          if (this.CHAT.groupMember[this.message.uid].name === null) {
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.showName = false;
+          }
         }
         return `${this.username + username}:`;
       },
@@ -91,7 +94,6 @@ export default {
     },
   },
   mounted() {
-    // console.log(this.CHAT.megArr);
     if (this.message.uid === this.CHAT.user.uid) {
       this.floatRight = 'right';
       this.flexDirect = 'row-reverse';
@@ -103,7 +105,6 @@ export default {
     // eslint-disable-next-line max-len
     } else if (this.CHAT.groupMember[this.message.uid] === undefined && this.message.uid !== undefined) {
       // 去请求其他成员的信息
-      // console.log(this.message.uid);
       CHAT.getOtherUser(this.message.uid);
     }
     if (this.message.url !== null) {
@@ -113,8 +114,6 @@ export default {
     // this.time = this.$moment().utc(Number(this.message.time) * 1000).format(MM-DD HH:mm:ss');
     const time = Math.floor(Number(this.message.time) * 1000);
     this.time = this.$moment(time).format('YYYY/MM/DD HH:mm:ss');
-    // console.log(Math.floor(Number(this.message.time)), this.message.content);
-    // console.log(this.$moment().format('YYYY/MM/DD hh:mm:ss'));
 
     // 消息已添加 scroll划到底部
     if (this.message.needScroll) {
@@ -127,12 +126,9 @@ export default {
   created() {
     // bus.$on('other_user', (data) => {
     //   this.icon = data.icon;
-    //   console.log('icon', data);
     //   this.name = data.name;
     // });
-    bus.$on('change_other_info', (data) => {
-      console.log(data);
-      console.log('in ');
+    bus.$on('change_other_info', () => {
     });
   },
   beforeDestroy() {

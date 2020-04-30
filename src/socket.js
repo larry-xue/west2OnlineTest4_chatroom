@@ -37,7 +37,6 @@ const CHAT = {
       rid: CHAT.roomInfo.rid,
     });
     this.socket.disconnect();
-    // console.login('123');
   },
 
   // 更新用户信息
@@ -46,7 +45,6 @@ const CHAT = {
   // 修改群组信息
   changeGroupInfo(data) {
     this.socket.emit('change_room_message', data);
-    // console.log('change');
   },
 
   // 创建群聊
@@ -84,19 +82,17 @@ const CHAT = {
   // 发送消息
   sendMeg(data) {
     this.socket.send(data);
-    // console.log('send');
   },
 
   // init
   init(uid) {
     // 连接服务器
     this.socket = io.connect('http://39.97.113.252:5000/chat');
-    // console.log(this.socket);
 
     // 通过url拿到rid房间号
     const { href } = window.location;
     const tempurl = href.split('?');
-    let roomid = '';
+    let roomid = '3a95f29b80f74c4c8aa044ea3e5c0715';
     // 房间号是否有效
     let status = 0;
     // eslint-disable-next-line no-empty
@@ -120,19 +116,14 @@ const CHAT = {
       CHAT.user = localUser;
     }
 
-    // console.log(CHAT.user);
-
     // 房主接收房间信息修改
     this.socket.on('owner_change', (res) => {
       // 返回的rid为当前房间---修改
-      // console.log('owner', res);
       if (res.data.rid === CHAT.roomInfo.rid) {
         const shareurl = `http://123.57.215.101:3000/chatroom?rid=${res.data.rid}`;
         CHAT.roomInfo = res.data;
-        // console.log('owner', res);
         CHAT.roomInfo.icon = res.data.icon;
         CHAT.roomInfo.url = shareurl;
-        // console.log('room-edit-success');
         // 发送请求成功的消息
         bus.$emit('change_group_success', {
           content: '群聊信息修改成功辣 ！',
@@ -141,10 +132,7 @@ const CHAT = {
         });
       } else {
       // 发送创建成功的消息
-        // console.log('create-success', res.data);
-        CHAT.roomInfo = res.data;
         const shareurl = `http://123.57.215.101:3000/chatroom?rid=${res.data.rid}`;
-        CHAT.roomInfo.icon = res.data.icon;
         bus.$emit('change_group_success', {
           content: `群聊创建成功 ！${shareurl}`,
           title: 1,
@@ -161,7 +149,6 @@ const CHAT = {
         const { url } = CHAT.roomInfo;
         CHAT.roomInfo = res.data;
         CHAT.roomInfo.url = url;
-        // console.log(CHAT.roomInfo);
       } else {
         bus.$emit('err_rid');
       }
@@ -170,7 +157,6 @@ const CHAT = {
     this.socket.emit('join_room', {
       rid: roomid,
     });
-    // console.log(roomid, 'roomid');
 
     this.socket.emit('get_room_message', {
       rid: roomid,
@@ -180,7 +166,6 @@ const CHAT = {
     this.socket.on('message', (res) => {
       const temp = res;
       temp.typeName = 'message';
-      // console.log(res);
       temp.needScroll = true;
       if (CHAT.groupMember[temp.uid] === undefined) {
         CHAT.getOtherUser(temp.uid);
@@ -208,14 +193,16 @@ const CHAT = {
     });
 
     // 接收解散群聊消息
-    this.socket.on('room_alive', () => {
+    this.socket.on('room_alive', (res) => {
+      if (res.data.break) {
+        CHAT.megArr = [];
+      }
     });
 
     // 接收查询其他用户的信息
     this.socket.on('user_inform', (res) => {
       if (res.data.message !== '"用户已注销"') {
         CHAT.groupMember[res.data.uid] = res.data;
-        // console.log(CHAT.groupMember);
       }
     });
 
@@ -231,7 +218,6 @@ const CHAT = {
 
     // 监听当前在线人数
     this.socket.on('room_people', (res) => {
-      // console.log(res, 'room-people');
       CHAT.onlineUserCount = res;
     });
 
@@ -245,8 +231,6 @@ const CHAT = {
       meg.needScroll = true;
       CHAT.megArr.push(meg);
     });
-    // console.log(window.location.href);
-    // this.socket.emit('flash_user');
   },
 };
 

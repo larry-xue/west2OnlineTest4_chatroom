@@ -26,7 +26,7 @@ import searchCmp from '../components/searchCpm.vue';
 import normalSettingItem from '../components/normalSettingItem.vue';
 import updatePhoto from '../components/uploadAndShowImg.vue';
 import CHAT from '../socket';
-// import bus from '../bus';
+import bus from '../bus';
 
 export default {
   components: {
@@ -97,7 +97,8 @@ export default {
           this.CHAT.createGroup(sendInfo);
         }
       } else {
-        // console.log('alert! 请至少保证输入名字！');
+        // 提示至少输入名字
+        bus.$emit('at_least_name');
       }
     },
   },

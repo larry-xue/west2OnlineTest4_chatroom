@@ -139,6 +139,24 @@ export default {
         event: 'fail_userInfo',
       };
     });
+    // 没有更早的消息了
+    bus.$on('no_more_meg', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '没有更早的消息了~~',
+        title: 0,
+        event: 'fail_userInfo',
+      };
+    });
+    // 创建群聊至少需要名字
+    bus.$on('at_least_name', () => {
+      this.showAlert = true;
+      this.alertData = {
+        content: '好歹给个名字呗~~',
+        title: 0,
+        event: 'fail_userInfo',
+      };
+    });
   },
   beforeDestroy() {
     CHAT.logout();
@@ -152,6 +170,8 @@ export default {
     bus.$off('update_userInfo_fail');
     bus.$off('refuse_change_room');
     bus.$off('err_rid');
+    bus.$off('no_more_meg');
+    bus.$off('at_least_name');
   },
   mounted() {
     this.$http.post('/user').then((res) => {

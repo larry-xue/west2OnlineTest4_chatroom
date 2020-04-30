@@ -113,10 +113,8 @@ export default {
       this.$http.post('/api/files', upPic).then((response) => {
         // const url = `http://39.97.113.252:5000${response.data.data.url}`;
         // 本地存储url
-        // console.log(response);
         this.CHAT.user.icon = response.data.data.url;
         localStorage.setItem('userInfo', JSON.stringify(this.CHAT.user));
-        // console.log(JSON.parse(localStorage.getItem('userInfo')), 'userInfo-setting');
         // put用户信息
         param.append('icon', response.data.data.url);
         this.$http.put('/user', param).then((res) => {
@@ -132,7 +130,6 @@ export default {
     editInfoBack(response, sendInfo) {
       // 更新localstorage中的id & 直接用sendInfo修改profile中的数据 & 修改头像url
       //   localstorage
-      // console.log(response);
       const beforeData = JSON.parse(localStorage.getItem('userInfo'));
       let url;
       if (beforeData.icon !== this.CHAT.icon) {
@@ -142,7 +139,6 @@ export default {
       data.icon = url;
       data.uid = localStorage.getItem('uid');
       localStorage.setItem('userInfo', JSON.stringify(data));
-      // console.log(response.data);
       //   profile
       Object.keys(sendInfo).forEach((key) => {
         // profileItems  itemContent  其他信息需要另外修改
@@ -153,11 +149,9 @@ export default {
           } else if (key === 'email') {
             this.$parent.$children[0].profileItems[2].itemContent = sendInfo[key];
             this.CHAT.user[key] = sendInfo[key];
-            // console.log(CHAT);
           }
         } else {
           // 修改面板
-          // console.log(key);
           this.CHAT.user[key] = sendInfo[key];
         }
       });

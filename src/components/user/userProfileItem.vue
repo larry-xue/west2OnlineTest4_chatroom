@@ -23,7 +23,6 @@ export default {
       if (name === 'time') {
         const date = new Date();
         val = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-        // console.log('time', date.getDay(), date);
       } else if (name === 'country') {
         val = 'China';
       } else {

@@ -22,6 +22,7 @@
 export default {
   data() {
     return {
+      // eslint-disable-next-line global-require
       picsrc: require('../assets/pic.png'),
       picsize: {
         width: '40%',

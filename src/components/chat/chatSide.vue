@@ -186,24 +186,18 @@ export default {
             // 头像上传完之后拿到url 再发送创建群组请求
             // const url = `http://39.97.113.252:5000${response.data.data.url}`;
             sendInfo.icon = url;
-            // console.log(sendInfo, 'in-url');
             this.CHAT.changeGroupInfo(sendInfo);
           });
         } else {
-          // console.log('in no url');
           this.CHAT.changeGroupInfo(sendInfo);
         }
-        // console.log(sendInfo);
       }
       // 清空群头像
-      // console.log('in');
       const pic = this.$children[0].$el.childNodes[2];
       pic.value = '';
     },
     submitChange() {
       // 先弹出提示框 确认后再进行修改
-      // console.log(this.CHAT.user.uid);
-      // console.log(this.CHAT.roomInfo.owner);
       if (this.CHAT.user.uid !== this.CHAT.roomInfo.owner) {
         bus.$emit('refuse_change_room');
       } else {

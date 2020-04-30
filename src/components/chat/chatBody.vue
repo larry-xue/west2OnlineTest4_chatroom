@@ -137,12 +137,12 @@ export default {
   methods: {
     beforeMeglist() {
       // 消息回滚十条
-      console.log(this.CHAT.megArr);
-      if (this.CHAT.megArr[0].index > 0) {
+      if (this.CHAT.megArr[0] !== undefined && this.CHAT.megArr[0].index > 0) {
         this.CHAT.getMegList(this.CHAT.roomInfo.rid, this.CHAT.megArr[0].index);
       } else {
-        console.log(this.CHAT.megArr[0].index);
         // document.getElementsByClassName('alert')[0].click();
+        // 没有更早的消息le ！
+        bus.$emit('no_more_meg');
       }
     },
     switchEmojiShow() {
