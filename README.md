@@ -2,13 +2,13 @@
 
 ## 项目地址
 
-click [here](<http://123.57.215.101:3000/chatroom) chat with me🤭
+click [here](http://123.57.215.101:3000/chatroom) chat with me🤭
 
 ## 技术栈
 
 ***
 
-vue2 + vue-cli3 +axios+socket io client+ vuescroll ++ font-awesome + moment.js + vue-clipboard2
+vue2 + vue-cli3 +axios+socket io client+ vuescroll + font-awesome + moment.js + vue-clipboard2
 
 ***
 
@@ -89,7 +89,7 @@ vue2 + vue-cli3 +axios+socket io client+ vuescroll ++ font-awesome + moment.js +
     - 判断该用户信息是否位于groupMember数组中
       - 若否，则触发查看其他用户信息的事件
       -   设置定时器在200ms后在push进megArr
-    - 封装收到的数组
+    - 处理收到的消息
       - needScroll 是否需要滑到底部
       - typeName： 消息类型（message为信息，announce为公告）
   - 聊天记录搜索
