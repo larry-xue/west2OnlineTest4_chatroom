@@ -18,23 +18,23 @@ vue2 + vue-cli3 +axios+socket io client+ vuescroll ++ font-awesome + moment.js +
 
 ***
 
-|app.vue
-    |userInfo.vue
-    	|userSettings.vue
-    	|userProfile.vue
-    |chat.vue
-    	|chatNav.vue
-    	|chatBody.vue
-    	|chatSide.vue
-    |GroupCreate.vue
+- |app.vue
+    - |userInfo.vue
+    	- |userSettings.vue
+    	- |userProfile.vue
+    - |chat.vue
+    	- |chatNav.vue
+    	- |chatBody.vue
+    	- |chatSide.vue
+    - |GroupCreate.vue
 
    ***一些通用组件***
-|alertCpm.vue
-|megItem.vue
-|normalSettingItem.vue
-|searchCmp.vue
-|profileItem.vue
-|uploadAndShowImg.vue
+- |alertCpm.vue
+- |megItem.vue
+- |normalSettingItem.vue
+- |searchCmp.vue
+- |profileItem.vue
+- |uploadAndShowImg.vue
 
 ***
 
